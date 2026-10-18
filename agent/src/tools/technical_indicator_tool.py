@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 from datetime import date, datetime, timedelta
 from typing import Any
 
@@ -192,6 +193,20 @@ def _compute_rsi(close: pd.Series, period: int = _RSI_PERIOD) -> float | None:
     return float(100.0 - (100.0 / (1.0 + rs)))
 
 
+def _round_keeping_precision(value: float, min_decimals: int, reference: float | None = None) -> float:
+    """Round to ``min_decimals`` places, widening for tiny magnitudes.
+
+    A fixed 2- or 4-decimal round collapses the output of a sub-penny asset
+    (e.g. a 1.2e-5 crypto price) to 0.0. Keep at least four significant digits
+    of ``reference`` (default ``value``); ordinary prices keep ``min_decimals``.
+    """
+    ref = abs(value if reference is None else reference)
+    if not math.isfinite(ref) or ref == 0:
+        return round(value, min_decimals)
+    decimals = max(min_decimals, 3 - math.floor(math.log10(ref)))
+    return round(value, min(decimals, 15))
+
+
 def _compute_macd(
     close: pd.Series,
     fast: int = _MACD_FAST,
@@ -206,10 +221,12 @@ def _compute_macd(
     macd_line = ema_fast - ema_slow
     signal_line = macd_line.ewm(span=signal, adjust=False).mean()
     histogram = macd_line - signal_line
+    macd_last = float(macd_line.iloc[-1])
+    signal_last = float(signal_line.iloc[-1])
     return {
-        "macd_line": round(float(macd_line.iloc[-1]), 4),
-        "signal_line": round(float(signal_line.iloc[-1]), 4),
-        "histogram": round(float(histogram.iloc[-1]), 4),
+        "macd_line": _round_keeping_precision(macd_last, 4, reference=macd_last),
+        "signal_line": _round_keeping_precision(signal_last, 4, reference=macd_last),
+        "histogram": _round_keeping_precision(float(histogram.iloc[-1]), 4, reference=macd_last),
     }
 
 
@@ -223,10 +240,12 @@ def _compute_bollinger(
         return None
     sma = close.rolling(window=period).mean()
     std = close.rolling(window=period).std()
+    middle = float(sma.iloc[-1])
+    spread = num_std * float(std.iloc[-1])
     return {
-        "upper": round(float(sma.iloc[-1] + num_std * std.iloc[-1]), 2),
-        "middle": round(float(sma.iloc[-1]), 2),
-        "lower": round(float(sma.iloc[-1] - num_std * std.iloc[-1]), 2),
+        "upper": _round_keeping_precision(middle + spread, 2, reference=middle),
+        "middle": _round_keeping_precision(middle, 2, reference=middle),
+        "lower": _round_keeping_precision(middle - spread, 2, reference=middle),
     }
 
 
