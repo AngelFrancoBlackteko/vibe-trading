@@ -871,7 +871,7 @@ The shared backtest market classifier recognizes `BTC/USD`, `ETH/USD`,
 </details>
 
 <details>
-<summary><b>Quant Library</b> <sub>306 tested functions across 23 modules, callable from every transport</sub></summary>
+<summary><b>Quant Library</b> <sub>308 tested functions across 24 modules, callable from every transport</sub></summary>
 
 `src/quantlib` holds one tested implementation of each piece of finance math the
 agent needs. Skills **import** these rather than carrying formulas inside
