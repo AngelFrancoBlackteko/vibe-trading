@@ -164,12 +164,13 @@ def _price_limit(symbol: str) -> float:
         Limit as fraction (0.10, 0.20, or 0.05).
     """
     code = symbol.split(".")[0] if "." in symbol else symbol
-    # ChiNext (300xxx) / STAR (688xxx): ±20%
-    if code.startswith("300") or code.startswith("688"):
+    # ChiNext (300xxx/301xxx) / STAR (688xxx, 689xxx CDRs): ±20%
+    if code.startswith(("300", "301", "688", "689")):
         return 0.20
     # ST stocks: ±5% (heuristic: can't fully detect from code alone)
-    # Beijing exchange (8xxxxx): ±30% — simplified to 0.30
-    if code.startswith("8") and len(code) == 6:
+    # Beijing exchange: ±30%. Current codes are 920xxx; legacy 4xxxxx/8xxxxx
+    # codes remain in historical data.
+    if len(code) == 6 and code.startswith(("4", "8", "920")):
         return 0.30
     # Main board: ±10%
     return 0.10

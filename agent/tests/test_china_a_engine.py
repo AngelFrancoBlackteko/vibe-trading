@@ -253,6 +253,12 @@ class TestPriceLimit:
             ("300750.SZ", 0.20),   # ChiNext
             ("688001.SH", 0.20),   # STAR Market
             ("830799.BJ", 0.30),   # Beijing
+            ("301269.SZ", 0.20),   # ChiNext 301 segment
+            ("689009.SH", 0.20),   # STAR Market CDR
+            ("430047.BJ", 0.30),   # Beijing legacy 43 segment
+            ("920002.BJ", 0.30),   # Beijing current 920 segment
+            ("002594.SZ", 0.10),   # SZSE main board
+            ("900901.SH", 0.10),   # SSE B-share stays on the default band
         ],
     )
     def test_price_limits(self, symbol: str, expected: float) -> None:
