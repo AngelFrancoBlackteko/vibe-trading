@@ -45,6 +45,8 @@ _RISK_XRAY_MAX_SYMBOLS = 50
 # Version 3 makes all valuation use an explicit FX rates map. Existing v2
 # snapshots/history are intentionally hidden after upgrade, including
 # USD/HKD/CNY snapshots whose numeric values would otherwise remain valid.
+# Version 4 rebuilds persisted holdings after market-prefix normalization;
+# old snapshots may have split one instrument into separate broker holdings.
 PORTFOLIO_VALUATION_VERSION = 4
 _LOADER_MARKET_SUFFIXES = frozenset({"US", "HK", "SZ", "SH", "BJ", "KS", "KQ", "NS", "BO", "TO", "V"})
 _NON_EQUITY_ASSET_TYPES = frozenset({"crypto", "stablecoin", "cash"})
