@@ -560,8 +560,16 @@ def _is_additive_unit(unit: Any) -> bool:
     average over its own period, and a per-share figure (``USD/shares``) is a
     ratio; quarterly EPS need not sum to the annual EPS. Subtracting three
     quarters from the year is meaningless for both, so they are not derived.
+
+    Args:
+        unit: SEC XBRL unit bucket; currency flows use three-letter codes.
+
+    Returns:
+        Whether the unit has the currency-code shape, excluding dimensionless,
+        share-count, per-share and unknown compound units.
     """
-    return isinstance(unit, str) and unit != "shares" and "/" not in unit
+    return (isinstance(unit, str) and len(unit) == 3
+            and unit.isascii() and unit.isalpha() and unit.isupper())
 
 
 def _synthesize_fiscal_q4(
@@ -602,7 +610,10 @@ def _synthesize_fiscal_q4(
         values = {
             concept: annual[concept] - sum(quarter[concept] for quarter in inside)
             for concept, unit in annual["_units"].items()
-            if _is_additive_unit(unit) and all(concept in quarter for quarter in inside)
+            if _is_additive_unit(unit) and all(
+                concept in quarter and quarter["_units"].get(concept) == unit
+                for quarter in inside
+            )
         }
         if not values:
             continue

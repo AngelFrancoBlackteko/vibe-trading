@@ -47,3 +47,16 @@ def test_pre_event_windows_keep_their_estimation_sample(shocked_frame) -> None:
         returns["A"].iloc[end - window:end], market.iloc[end - window:end]
     )
     assert result.events[0].fit.residual_std == pytest.approx(expected.residual_std)
+
+
+@pytest.mark.parametrize("model", ["market", "market_adjusted", "mean_adjusted"])
+def test_zero_gap_excludes_event_and_later_returns(shocked_frame, model) -> None:
+    returns, market, index, position = shocked_frame
+    before = event_study(returns, market, [("A", index[position])],
+                         event_window=(1, 5), estimation_gap=0, model=model)
+    shocked = returns.copy()
+    shocked.iloc[position:position + 6, 0] += 10
+    after = event_study(shocked, market, [("A", index[position])],
+                        event_window=(1, 5), estimation_gap=0, model=model)
+    assert before.events[0].fit == after.events[0].fit
+    assert after.events[0].car - before.events[0].car == pytest.approx(50)

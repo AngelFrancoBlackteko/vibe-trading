@@ -60,6 +60,7 @@ class TestNormalize:
             ("EURUSD=X", "EUR/USD"),
             ("usdjpy=x", "USD/JPY"),
             ("XAUUSD=X", "XAU/USD"),
+            ("  eurusd.fx  ", "EUR/USD"),
         ],
     )
     def test_normalize(self, raw: str, expected: str) -> None:

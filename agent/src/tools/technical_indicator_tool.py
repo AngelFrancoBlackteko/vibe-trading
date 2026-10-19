@@ -198,13 +198,26 @@ def _round_keeping_precision(value: float, min_decimals: int, reference: float |
 
     A fixed 2- or 4-decimal round collapses the output of a sub-penny asset
     (e.g. a 1.2e-5 crypto price) to 0.0. Keep at least four significant digits
-    of ``reference`` (default ``value``); ordinary prices keep ``min_decimals``.
+    of each nonzero value, using ``reference`` only if it requires more
+    precision; ordinary prices keep ``min_decimals``. Python's decimal-place
+    count can exceed 15 for tiny floats without claiming more significant
+    digits than the input carries.
+
+    Args:
+        value: Indicator value to round.
+        min_decimals: Minimum number of decimal places.
+        reference: Optional scale of the related indicator.
+
+    Returns:
+        Rounded value with at least four significant digits when nonzero.
     """
-    ref = abs(value if reference is None else reference)
-    if not math.isfinite(ref) or ref == 0:
+    if not math.isfinite(value) or value == 0:
         return round(value, min_decimals)
+    ref = abs(value)
+    if reference is not None and math.isfinite(reference) and reference != 0:
+        ref = min(ref, abs(reference))
     decimals = max(min_decimals, 3 - math.floor(math.log10(ref)))
-    return round(value, min(decimals, 15))
+    return round(value, decimals)
 
 
 def _compute_macd(

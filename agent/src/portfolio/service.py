@@ -45,7 +45,7 @@ _RISK_XRAY_MAX_SYMBOLS = 50
 # Version 3 makes all valuation use an explicit FX rates map. Existing v2
 # snapshots/history are intentionally hidden after upgrade, including
 # USD/HKD/CNY snapshots whose numeric values would otherwise remain valid.
-PORTFOLIO_VALUATION_VERSION = 3
+PORTFOLIO_VALUATION_VERSION = 4
 _LOADER_MARKET_SUFFIXES = frozenset({"US", "HK", "SZ", "SH", "BJ", "KS", "KQ", "NS", "BO", "TO", "V"})
 _NON_EQUITY_ASSET_TYPES = frozenset({"crypto", "stablecoin", "cash"})
 # Futu reports codes market-first (``HK.00700``, ``US.AAPL``); the rest of the
@@ -839,7 +839,7 @@ class PortfolioService:
         """
         grouped: dict[str, dict[str, Any]] = {}
         for row in positions:
-            symbol = _suffix_form(str(row.get("symbol") or "").upper())
+            symbol = _suffix_form(str(row.get("symbol") or "").strip().upper())
             currency = str(row.get("currency") or "").upper()
             market = str(row.get("market") or "").upper()
             if symbol.endswith(".US"):

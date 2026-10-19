@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.portfolio.normalization import normalize_position
 from src.portfolio.service import PortfolioService
 
@@ -43,3 +45,19 @@ def test_suffix_form_symbols_still_route_to_the_risk_xray() -> None:
     position = {"symbol": "700.HK", "currency": "HKD", "market": "HK", "priced": True,
                 "market_value_usd": 1000, "asset_type": "stock"}
     assert PortfolioService._risk_xray_symbol(position) == "700.HK"
+
+
+@pytest.mark.parametrize("code,expected", [
+    (" US.BRK.B ", "BRK.B.US"), ("sh.600519", "600519.SH"),
+    ("SZ.000001", "000001.SZ"), ("BJ.920002", "920002.BJ"),
+])
+def test_prefix_conversion_preserves_share_classes_and_venues(code, expected):
+    assert PortfolioService._risk_xray_symbol({"symbol": code}) == expected
+
+
+def test_futu_whitespace_does_not_split_the_same_holding():
+    rows = PortfolioService._combine_holdings([
+        _futu(" US.AAPL ", "US", "USD"), _futu("AAPL.US", "US", "USD"),
+    ])
+    assert len(rows) == 1
+    assert rows[0]["market_value_usd"] == 2000.0

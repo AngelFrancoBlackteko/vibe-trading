@@ -16,6 +16,8 @@ from __future__ import annotations
 import json
 from unittest.mock import patch
 
+import pytest
+
 from backtest.loaders import sec_frames
 from src.tools.financial_statements_tool import FinancialStatementsTool
 from src.tools.sec_filings_tool import _parse_metric
@@ -270,6 +272,26 @@ class TestDerivedQ4NonAdditiveUnits:
                  accn="k23", filed="2023-11-03")
         )
         return {"units": {unit: rows}}
+
+    @pytest.mark.parametrize("unit", ["pure", "shares", "USD/shares", "", "percent"])
+    def test_non_currency_units_are_not_synthesized(self, unit):
+        facts = {"facts": {"us-gaap": {
+            "NetIncomeLoss": self._concept("USD", [30, 24, 19], 97),
+            "EarningsPerShareDiluted": self._concept(unit, [1, 2, 3], 7),
+        }}}
+        q4 = next(p for p in _fetch(facts, statement="indicators", period="quarter")
+                  if p["REPORT_DATE"] == "2023-09-30")
+        assert q4["NetIncomeLoss"] == 24
+        assert "EarningsPerShareDiluted" not in q4
+
+    @pytest.mark.parametrize("unit", ["USD", "EUR", "JPY"])
+    def test_currency_flows_are_still_synthesized(self, unit):
+        facts = {"facts": {"us-gaap": {
+            "NetIncomeLoss": self._concept(unit, [30, 24, 19], 97),
+        }}}
+        q4 = next(p for p in _fetch(facts, statement="income", period="quarter")
+                  if p["REPORT_DATE"] == "2023-09-30")
+        assert q4["NetIncomeLoss"] == 24
 
     def test_share_counts_and_eps_are_not_derived(self):
         facts = {
