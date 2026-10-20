@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 import socket
 import subprocess
 import sys
@@ -81,6 +82,50 @@ _AUTH_REQUIRED_MARKERS = (
     "oauth token missing",
     "connector authorize",
 )
+
+_REDACT_URL_QUERY = re.compile(r"(?i)(https?://[^\s?#]+)\?[^\s#]+")
+_REDACT_SECRET_PARAMETER = re.compile(
+    r"(?i)\b(signature|api[_-]?key|secret)=([^&\s]+)"
+)
+
+
+def _portfolio_error_details(
+    error: BaseException | str,
+    *,
+    broker: str | None = None,
+    default_code: str = "ConnectorReadError",
+) -> tuple[str, str]:
+    """Return a user-safe connector error without signed request parameters."""
+    message = str(error)
+    if (
+        str(broker or "").lower() == "binance"
+        and re.search(r"\b451\b", message)
+        and any(marker in message.lower() for marker in ("restricted location", "eligibility"))
+    ):
+        return (
+            "binance_restricted_location",
+            "Binance denied the read with HTTP 451 because the current network location is restricted. "
+            "Confirm Binance is available for your region and that your account uses its supported API endpoint.",
+        )
+
+    message = _REDACT_URL_QUERY.sub(r"\1?<query redacted>", message)
+    message = _REDACT_SECRET_PARAMETER.sub(r"\1=<redacted>", message)
+    return default_code, message[:300]
+
+
+def _sanitize_snapshot_errors(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Clean error strings from stored snapshots before returning them to APIs."""
+    for account in snapshot.get("accounts", []):
+        if account.get("status") != "error":
+            continue
+        error_code, error = _portfolio_error_details(
+            account.get("error") or "",
+            broker=account.get("broker"),
+            default_code=str(account.get("error_code") or "ConnectorReadError"),
+        )
+        account["error_code"] = error_code
+        account["error"] = error
+    return snapshot
 
 
 def _authorization_required(payload: dict[str, Any]) -> bool:
@@ -289,22 +334,30 @@ class PortfolioService:
                 if self._progress_callback is not None:
                     self._progress_callback(source.id, "ok", None)
             except Exception as exc:  # read failures are isolated per connector
+                failed_profile = None
+                failure_broker = None
                 try:
                     _, failed_profile = self._connection_profile(source)
+                    failure_broker = failed_profile.connector
                     auth_required = failed_profile.transport == "remote_mcp" and _authorization_required(
                         {"error": str(exc)}
                     )
                 except Exception:
                     auth_required = False
+                error_code, error = _portfolio_error_details(
+                    exc,
+                    broker=failure_broker,
+                    default_code=type(exc).__name__,
+                )
                 results[source.id] = {
                     "status": "error",
-                    "error_code": type(exc).__name__,
-                    "error": str(exc)[:300],
+                    "error_code": error_code,
+                    "error": error,
                     "failure_kind": "authorization" if auth_required else "transient",
                     "reconnect_required": auth_required,
                 }
                 if self._progress_callback is not None:
-                    self._progress_callback(source.id, "error", str(exc)[:160])
+                    self._progress_callback(source.id, "error", error[:160])
 
         positions: list[dict[str, Any]] = []
         accounts: list[dict[str, Any]] = []
@@ -351,10 +404,15 @@ class PortfolioService:
                     1 for row in broker_positions if row.get("priced")
                 )
             except Exception as exc:
+                error_code, error = _portfolio_error_details(
+                    exc,
+                    broker=broker,
+                    default_code=type(exc).__name__,
+                )
                 failure = {
                     "status": "error",
-                    "error_code": type(exc).__name__,
-                    "error": str(exc)[:300],
+                    "error_code": error_code,
+                    "error": error,
                     "failure_kind": "transient",
                     "reconnect_required": False,
                 }
@@ -364,7 +422,7 @@ class PortfolioService:
                     )
                 )
                 if self._progress_callback is not None:
-                    self._progress_callback(source.id, "error", str(exc)[:160])
+                    self._progress_callback(source.id, "error", error[:160])
                 continue
 
             accounts.append(
@@ -537,7 +595,7 @@ class PortfolioService:
             }
             for account in snapshot.get("accounts", [])
         ]
-        return snapshot
+        return _sanitize_snapshot_errors(snapshot)
 
     def snapshot_by_id(self, snapshot_id: str) -> dict[str, Any] | None:
         """Return one stored snapshot exactly as persisted, never recomputed.
@@ -555,7 +613,7 @@ class PortfolioService:
             return None
         enabled = {source.id for source in self.settings_store.load().sources if source.enabled}
         observed = {str(account.get("source_id") or account.get("broker")) for account in snapshot.get("accounts", [])}
-        return snapshot if observed <= enabled else None
+        return _sanitize_snapshot_errors(snapshot) if observed <= enabled else None
 
     def reconnect_source(self, source_id: str) -> dict[str, Any]:
         """Run a source's interactive OAuth flow on explicit user request.

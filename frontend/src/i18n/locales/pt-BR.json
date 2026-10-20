@@ -2203,6 +2203,7 @@
       "failed": "Não foi possível ler – não foi contabilizado no total",
       "lastSuccess": "Última leitura bem-sucedida {{time}}",
       "noSuccess": "Nenhuma leitura bem-sucedida ainda",
+      "binanceRestrictedLocation": "A Binance bloqueou esta leitura (HTTP 451): a localização atual da rede é restrita. Verifique a disponibilidade da Binance na sua região e use o endpoint de API compatível.",
       "reconnect": "Reconectar",
       "retryRead": "Tente ler novamente"
     },

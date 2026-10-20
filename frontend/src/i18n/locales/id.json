@@ -2203,6 +2203,7 @@
       "failed": "Tidak dapat dibaca — tidak dihitung dalam total",
       "lastSuccess": "Terakhir berhasil dibaca {{time}}",
       "noSuccess": "Belum pernah berhasil dibaca",
+      "binanceRestrictedLocation": "Binance memblokir pembacaan ini (HTTP 451): lokasi jaringan saat ini dibatasi. Periksa ketersediaan Binance di wilayah Anda dan gunakan endpoint API yang didukung.",
       "reconnect": "Hubungkan ulang",
       "retryRead": "Coba baca lagi"
     },
