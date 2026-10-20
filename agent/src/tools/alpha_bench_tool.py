@@ -993,9 +993,9 @@ def _bench_one_alpha(
 
     factor_df = registry.compute(alpha_id, panel)
     ic_series = compute_ic_series(factor_df, return_df)
-    if ic_series.empty:
+    if len(ic_series) < 2:
         raise RuntimeError(
-            f"{alpha_id}: IC series empty — insufficient overlap between factor and returns"
+            f"{alpha_id}: insufficient IC observations (need at least 2)"
         )
     ic_mean = float(ic_series.mean())
     ic_std = float(ic_series.std())
