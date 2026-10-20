@@ -45,6 +45,7 @@ class LLMProviderOption(BaseModel):
     api_key_env: Optional[str] = None
     base_url_env: str
     default_model: str
+    model_options: List[str] = Field(default_factory=list)
     default_base_url: str
     base_url_options: List[str] = Field(default_factory=list)
     api_key_required: bool = True
@@ -322,6 +323,14 @@ async def _list_provider_models(
 ) -> LLMModelsResponse:
     """Best-effort live model discovery with a safe editable fallback."""
     fallback = [provider.default_model]
+    # Keep the direct MiniMax picker curated. Saved/custom model names remain
+    # editable, and custom endpoints retain their own live model discovery.
+    if provider.name == "minimax" and base_url.rstrip("/") in provider.base_url_options:
+        return LLMModelsResponse(
+            provider=provider.name,
+            models=provider.model_options or fallback,
+            source="default",
+        )
     if provider.auth_type in {"oauth", "gh_cli"}:
         return LLMModelsResponse(
             provider=provider.name,
@@ -355,6 +364,32 @@ async def _list_provider_models(
             source="default",
             warning_code="model_list_unavailable",
         )
+
+    # Curate only known gateway text namespaces at their official endpoints.
+    # Never invent availability: retain current routes only when discovery returned them.
+    gateway_choices = {
+        ("openrouter", "https://openrouter.ai/api/v1"): (
+            "minimax/minimax-", ["minimax/minimax-m3.1-flash:free", "minimax/minimax-m3"]
+        ),
+        ("opencode", "https://opencode.ai/zen/v1"): (
+            "minimax-", ["minimax-m3.1-flash-free", "minimax-m3"]
+        ),
+        ("opencode", "https://opencode.ai/zen/go/v1"): (
+            "minimax-", ["minimax-m3.1-flash-free", "minimax-m3"]
+        ),
+    }
+    if choices := gateway_choices.get((provider.name, base_url.rstrip("/"))):
+        prefix, current = choices
+        text_models = []
+        for model in models:
+            suffix = model.removeprefix(prefix).lower() if model.startswith(prefix) else ""
+            if suffix == "01" or (suffix.startswith("m") and suffix[1:2].isdigit()):
+                text_models.append(model)
+        if text_models:
+            first = models.index(text_models[0])
+            remaining = [model for model in models if model not in text_models]
+            remaining[first:first] = [model for model in current if model in models]
+            models = remaining
 
     discovered = bool(models)
     if provider.default_model not in models:

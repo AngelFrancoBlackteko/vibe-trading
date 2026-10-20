@@ -1038,6 +1038,8 @@ vibe-trading-mcp               # start MCP server (stdio)
 
 > **Supported LLM providers:** OpenRouter, OpenAI, Anthropic (native Messages API), DeepSeek, OpenCode (Go / Zen), Gemini, Groq, DashScope/Qwen, Zhipu, Moonshot/Kimi, MiniMax, SiliconFlow (CN + Global), Xiaomi MIMO, Novita AI, iFlytek Spark, Z.ai, NVIDIA NIM, ModelScope, GitHub Copilot, Claude Code CLI, Ollama (local). When no `*_BASE_URL` is set, each provider falls back to its canonical endpoint, so just a key is enough. See `.env.example` for config.
 
+MiniMax onboarding defaults to `MiniMax-M3.1-Flash`, with `MiniMax-M3` as the alternative in Settings. Both the global and China API endpoints are supported. Saved model IDs and custom endpoints remain editable; the ordinary model list hides older MiniMax text suggestions. MiniMax uses the API's default thinking depth, and Flash's reasoning is preserved across tool turns.
+
 > **Tip:** All markets work without any API keys thanks to automatic fallback. yfinance/Yahoo (HK/US/Canada/UK), OKX (crypto), and AKShare (A-shares, US, HK, futures, forex) are all free. LSE `.L` quotes must declare GBP or GBp so pence can be normalized before GBP accounting. Tushare token is optional; tencent, baostock and AKShare are the no-token A-share fallbacks.
 
 ### GitHub Copilot SDK provider
