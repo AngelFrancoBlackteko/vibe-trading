@@ -113,8 +113,25 @@ def _record_llm_usage(
     if purpose is not None:
         entry["purpose"] = purpose
     summary.setdefault("per_iteration", []).append(entry)
-    summary["updated_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    _write_llm_usage(run_dir, summary)
+    return normalized
 
+
+def _record_unreported_llm_call(run_dir: Path, summary: dict[str, Any]) -> None:
+    """Count a call whose provider reported no usage, without inventing tokens.
+
+    Args:
+        run_dir: Active run's artifact directory.
+        summary: The run's usage summary, updated in place.
+    """
+    totals = summary.setdefault("totals", {})
+    totals["unreported_calls"] = int(totals.get("unreported_calls") or 0) + 1
+    _write_llm_usage(run_dir, summary)
+
+
+def _write_llm_usage(run_dir: Path, summary: dict[str, Any]) -> None:
+    """Stamp and atomically persist the usage summary; a write failure is logged."""
+    summary["updated_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     try:
         path = run_dir / LLM_USAGE_ARTIFACT
         tmp_path = path.with_suffix(path.suffix + ".tmp")
@@ -125,5 +142,3 @@ def _record_llm_usage(
         tmp_path.replace(path)
     except OSError as exc:
         logger.debug("LLM usage artifact write skipped: %s", exc)
-
-    return normalized

@@ -163,6 +163,7 @@ from src.agent.llm_usage import (  # noqa: E402
     _normalize_llm_usage as _normalize_llm_usage,
     _new_llm_usage_summary as _new_llm_usage_summary,
     _record_llm_usage as _record_llm_usage,
+    _record_unreported_llm_call as _record_unreported_llm_call,
 )
 
 
@@ -478,7 +479,8 @@ class AgentLoop(ToolCallLifecycle):
             if limit is not None and int(goal.get("tokens_used") or 0) >= limit:
                 self._budget_stop_reason = (
                     "goal_token_budget_exhausted: the research goal's token budget "
-                    "has been reached. Increase its budget or end the goal before continuing."
+                    "has been reached. End the goal to continue; a new goal can set a "
+                    "larger budget."
                 )
 
         if active_goal_id and session_id:
@@ -759,8 +761,11 @@ class AgentLoop(ToolCallLifecycle):
                     last_response_model = current_response_model
                 self._account_llm_usage(run_dir, usage, current_iter)
                 # A caller's spending monitor can cancel synchronously on the
-                # usage event. Do not execute tools from that paid response.
-                if self._cancel_event.is_set() or self._budget_stop_reason is not None:
+                # usage event. Do not execute tools from that paid response; a
+                # text-only answer that crossed a goal budget is still released.
+                if self._cancel_event.is_set() or (
+                    self._budget_stop_reason is not None and response.has_tool_calls
+                ):
                     break
                 thinking_text = "".join(stream.thinking_chunks)
                 if thinking_text:
@@ -1139,6 +1144,7 @@ class AgentLoop(ToolCallLifecycle):
                 empty_response_model=self._llm_runtime.configured_model or "(unset)",
                 max_iterations=self.max_iterations,
                 budget_reason=self._budget_stop_reason,
+                answer_released=bool(final_content),
             )
         )
         final_reason = outcome.reason
@@ -1445,8 +1451,14 @@ class AgentLoop(ToolCallLifecycle):
                 **delta, **metadata,
                 "call_index": self._llm_usage_summary["totals"]["calls"],
             })
-        else:
+        elif purpose is None and not self._cancel_event.is_set():
             self._emit("llm_usage_unavailable", metadata)
+        else:
+            # A failed stream, a compaction call or a cancelled response that
+            # reported nothing is counted as unreported, not announced as a
+            # missing bill: the live decision budget halts on that event, so a
+            # retried connection reset stopped live decisions for the day.
+            _record_unreported_llm_call(run_dir, self._llm_usage_summary)
 
     # -- Context compression ---------------------------------------------------
 

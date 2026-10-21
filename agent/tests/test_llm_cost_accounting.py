@@ -114,8 +114,12 @@ def test_failed_summary_without_timeout_reports_unknown_usage(tmp_path, monkeypa
             agent._auto_compact(_messages(), tmp_path, trace, iteration=7)
     finally:
         trace.close()
-    assert ("llm_usage_unavailable", {"iter": 7, "purpose": "compaction"}) in events
-    assert not (tmp_path / "llm_usage.json").exists()
+    # Counted as unreported rather than announced: the live decision budget
+    # halts on llm_usage_unavailable (see the live-budget test below).
+    assert not [event for event in events if event[0] == "llm_usage_unavailable"]
+    report = json.loads((tmp_path / "llm_usage.json").read_text())
+    assert report["totals"]["unreported_calls"] == 1
+    assert report["totals"]["calls"] == report["totals"]["total_tokens"] == 0
 
 
 def test_cancelled_agent_response_keeps_reported_usage(tmp_path):
@@ -291,3 +295,79 @@ def test_failed_stream_usage_is_counted_before_retry(tmp_path, monkeypatch, reco
     assert report["totals"]["calls"] == 2
     assert report["totals"]["total_tokens"] == USAGE["total_tokens"] * 2
     assert report["per_iteration"][0]["purpose"] == "failed_stream"
+
+
+def _usage_events(events):
+    return [(kind, data) for kind, data in events if kind.startswith("llm_usage")]
+
+
+def test_failed_stream_without_usage_is_counted_not_announced(tmp_path, monkeypatch):
+    from src.providers.chat import ProviderStreamError
+
+    events = []
+    agent, llm = _agent(tmp_path, lambda kind, data: events.append((kind, data)))
+    monkeypatch.setattr("src.agent.loop._stream_retry_backoff_s", lambda _: 0)
+    llm.stream_chat.side_effect = [
+        ProviderStreamError(provider="deepseek", model="m", original=ConnectionError("reset")),
+        LLMResponse(content="Hello", usage_metadata=USAGE),
+    ]
+    result = agent.run("Say hello.")
+    assert result["status"] == "success"
+    assert [kind for kind, _ in _usage_events(events)] == ["llm_usage"]
+    report = json.loads((tmp_path / "llm_usage.json").read_text())
+    assert report["totals"]["calls"] == 1
+    assert report["totals"]["unreported_calls"] == 1
+
+
+def test_live_decision_budget_survives_a_retried_connection_reset(tmp_path, monkeypatch):
+    """A reset then a successful retry used to halt live decisions for the day."""
+    from datetime import datetime, timezone
+
+    from src.live.runtime.decision_budget import DecisionBudget
+    from src.providers.chat import ProviderStreamError
+
+    events = []
+    agent, llm = _agent(tmp_path, lambda kind, data: events.append((kind, data)))
+    monkeypatch.setattr("src.agent.loop._stream_retry_backoff_s", lambda _: 0)
+    llm.stream_chat.side_effect = [
+        ProviderStreamError(provider="deepseek", model="m", original=ConnectionError("reset")),
+        LLMResponse(content="Hold.", usage_metadata=USAGE),
+    ]
+    agent.run("Decide.")
+    budget = DecisionBudget("alpaca", path=tmp_path / "budget.db")
+    settings, now = budget.settings(), datetime.now(timezone.utc)
+    decision = budget.begin(settings, now)
+    for kind, data in _usage_events(events):
+        # The way live_routes forwards events to the budget.
+        budget.record(decision, data if kind == "llm_usage" else {}, settings, now)
+    budget.finish(decision, settings, now)
+
+
+def test_an_ordinary_response_without_usage_is_still_announced(tmp_path):
+    events = []
+    agent, llm = _agent(tmp_path, lambda kind, data: events.append((kind, data)))
+    llm.stream_chat.return_value = LLMResponse(content="Hello", usage_metadata=None)
+    agent.run("Say hello.")
+    assert ("llm_usage_unavailable", {"iter": 1}) in _usage_events(events)
+
+
+def test_a_text_answer_that_crosses_the_goal_budget_is_released(tmp_path, monkeypatch):
+    from src.goal import GoalStore
+
+    monkeypatch.setenv("VIBE_TRADING_GOAL_DB_PATH", str(tmp_path / "goals.db"))
+    store = GoalStore()
+    goal = store.replace_goal(
+        session_id="cost-test", objective="Answer.", criteria=["answer"], token_budget=1000,
+    )
+    agent, llm = _agent(tmp_path)
+    llm.stream_chat.return_value = LLMResponse(content="Here is the full answer.", usage_metadata=USAGE)
+    result = agent.run("Answer it.", session_id="cost-test")
+    assert result["status"] == "success"
+    assert result["content"] == "Here is the full answer."
+    assert "goal_token_budget_exhausted" in result["reason"]
+    assert store.get_goal(goal.goal_id).tokens_used == 1100
+
+    # The exhausted goal still refuses further spending.
+    agent.run("Continue.", session_id="cost-test")
+    llm.stream_chat.assert_called_once()
+

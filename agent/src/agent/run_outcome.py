@@ -75,6 +75,8 @@ class OutcomeInputs:
         max_iterations: The run's iteration budget (for the failure
             message).
         budget_reason: An exhausted research-goal token budget, if any.
+        answer_released: Whether a final answer was released to the user.
+            One that crossed the budget is a degraded success, not a failure.
     """
 
     stall_reason: Optional[str]
@@ -91,6 +93,7 @@ class OutcomeInputs:
     empty_response_model: str
     max_iterations: int
     budget_reason: Optional[str] = None
+    answer_released: bool = False
 
 
 @dataclass
@@ -130,7 +133,7 @@ def resolve_final_status(inputs: OutcomeInputs) -> RunOutcome:
         return RunOutcome("failed", inputs.stall_reason, None, False)
     if inputs.cancelled:
         return RunOutcome("cancelled", "cancelled by user", "cancelled", False)
-    if inputs.budget_reason is not None:
+    if inputs.budget_reason is not None and not inputs.answer_released:
         return RunOutcome("failed", inputs.budget_reason, "failure", False)
     if inputs.no_progress_reason is not None:
         return RunOutcome("failed", inputs.no_progress_reason, "failure", False)
@@ -142,6 +145,9 @@ def resolve_final_status(inputs: OutcomeInputs) -> RunOutcome:
         )
         return RunOutcome("failed", reason, "failure", False)
     if inputs.has_output:
+        if inputs.budget_reason is not None:
+            # The answer that crossed a goal's token budget was released.
+            return RunOutcome("success", inputs.budget_reason, "success", True)
         if inputs.released_fallback:
             reason = inputs.released_fallback_reason or (
                 "final answer degraded to the deterministic fallback after "
