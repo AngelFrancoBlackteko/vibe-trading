@@ -52,11 +52,14 @@
 
 > ⚠️ **보안 경고:** X 계정 `VibeTrading_HKU`, Virtuals 프로젝트 `101845`, 토큰 컨트랙트 `0x640BDBF77b6447E8b7DB7894cED84BD1c40571f4`는 모두 Vibe-Trading 공식과 무관합니다. Vibe-Trading은 어떠한 토큰이나 밈코인도 발행하거나 공식적으로 지지한 적이 없습니다. 해당 토큰을 구매하거나 지갑을 연결하거나 어떠한 서명도 하지 마세요. [자세히 보기](SECURITY.md#official-channels--impersonation).
 
-- **2026-10-21** 🛠️ **모의 계좌와 커뮤니티 문제 수정**: 일별 모의 거래에 Agent/MCP, CLI, API, Web 진입점을 추가했습니다([#1939](https://github.com/HKUDS/Vibe-Trading/pull/1939)). 선택한 엔진이 무시하는 설정을 경고합니다([#1947](https://github.com/HKUDS/Vibe-Trading/pull/1947)). 일별 자금 흐름 응답이 비어 있어도 대체 소스를 시도하며, 실제 출처와 전체 순유입·대형 주문 순유입을 구분합니다. Telegram 설정 안내를 보완했습니다. 다른 수정과 제한 사항은 [CHANGELOG](CHANGELOG.md)를 참고하세요.
+- **2026-10-21** 🚀 **v0.1.17 출시**([릴리스 노트](https://github.com/HKUDS/Vibe-Trading/releases/tag/v0.1.17), `pip install -U vibe-trading-ai`): 0.1.16 이후 커밋 638개와 병합된 풀 리퀘스트 228개, 그리고 메인테이너 커밋으로 반영된 풀 리퀘스트 41개이며 기여자는 33명입니다. **이번 릴리스의 핵심은 일별 모의 거래입니다:** Agent와 MCP용 `paper_trade_step` 도구, 그리고 `vibe-trading paper`, REST API, 웹 페이지에서 쓰는 저장형 모의 계좌가 마감된 일봉에 주문이나 전략을 체결하며 브로커에는 절대 닿지 않습니다. 저장된 계좌는 앞으로만 진행합니다([#1939](https://github.com/HKUDS/Vibe-Trading/pull/1939)). **나머지 대부분은 정확성 수정이며 상당수가 같은 형태입니다: 계산할 수 없는 값은 그럴듯한 숫자로 바뀌는 대신 계산할 수 없다고 그대로 알려 줍니다.** 손실 거래가 없는 수익 팩터, 정의되지 않은 상관계수, 상한이 없는 비율은 `null`로 반환되고, IC 관측치가 부족한 팩터는 이유와 함께 건너뜁니다. 누락된 가격이 수익률을 잇지 않으며, 철자가 틀렸거나 선택한 엔진이 쓰지 않는 백테스트 설정은 실행 카드에 경고로 표시됩니다. **새 기능:** 브라질(B3) 시장, 462개에서 478개로 늘어난 Alpha Zoo 팩터, 안내형 채널 설정에 추가된 Slack과 Discord, HTML 또는 비밀번호로 보호할 수 있는 PDF 이메일 보고서, Run Detail·채팅·Swarm의 Token 사용량, `claude-cli` 제공자, 페르시아어와 튀르키예어 추가(UI 11개 언어). **오늘의 수정:** 자금 흐름 대체 경로가 실제 데이터 출처를 밝히고 총 흐름과 주력 흐름을 구분하며, Telegram 설정 절차를 보완했습니다. [@rudycelekli](https://github.com/rudycelekli), [@Shizoqua](https://github.com/Shizoqua), [@he-yufeng](https://github.com/he-yufeng), [@shadowinlife](https://github.com/shadowinlife), [@zeus229](https://github.com/zeus229), [@alexwan02](https://github.com/alexwan02), [@Jackzigen](https://github.com/Jackzigen), [@cgycorey](https://github.com/cgycorey), [@MetaAviator](https://github.com/MetaAviator), [@lorenzozanee](https://github.com/lorenzozanee), [@Mikesad](https://github.com/Mikesad), [@remote-controlled-man](https://github.com/remote-controlled-man), [@Romzhou](https://github.com/Romzhou), [@sambazhu](https://github.com/sambazhu), [@wavebyrd](https://github.com/wavebyrd), [@BHhhh-123](https://github.com/BHhhh-123), [@Bortlesboat](https://github.com/Bortlesboat), [@bygordon130-hub](https://github.com/bygordon130-hub), [@davidalmeida90](https://github.com/davidalmeida90), [@DrDLyuan](https://github.com/DrDLyuan), [@Emad211](https://github.com/Emad211), [@Frank-zhu2000](https://github.com/Frank-zhu2000), [@goatyyc](https://github.com/goatyyc), [@hunters1011-ctrl](https://github.com/hunters1011-ctrl), [@incorpore](https://github.com/incorpore), [@mdb1230](https://github.com/mdb1230), [@mminkus](https://github.com/mminkus), [@passionbull](https://github.com/passionbull), [@rwxyx518-prog](https://github.com/rwxyx518-prog), [@ThreeTima](https://github.com/ThreeTima), [@tomaszkubiak-courses](https://github.com/tomaszkubiak-courses), [@xaritoku](https://github.com/xaritoku)에게 감사드립니다!
 
 - **2026-10-20** 🛠️ **백테스트 진단과 연구 결과의 정확성**: 인식되지 않는 백테스트 설정 키를 경고하고, 정의되지 않은 상관관계를 0 대신 알 수 없음으로 표시하며, 재검증 시 저장된 연율화 계수를 재사용합니다([#1935](https://github.com/HKUDS/Vibe-Trading/pull/1935), [#1933](https://github.com/HKUDS/Vibe-Trading/pull/1933), [#1915](https://github.com/HKUDS/Vibe-Trading/pull/1915)). 팩터 표본 수 검사, 도구 입력 검증, 거래 일지 시장 분류, 숫자 표시와 WeCom 스트리밍 응답도 개선했습니다. 전체 14건의 수정과 남은 제한 사항은 [CHANGELOG](CHANGELOG.md)를 참고하세요.
 
 - **2026-10-19** 🛠️ **금융 계산 오류 9건 수정**: 팩터 감쇠 가중치, A주 시장별 가격 제한과 베이징 종목 코드, SEC 4분기 유량 추정, 이벤트 연구 추정 기간을 수정했습니다. Futu 보유 종목 식별과 작은 MACD·볼린저 밴드 값을 보존하고 음의 고유 분산을 거부합니다. Yahoo 외환 코드에도 통화쌍별 스프레드와 스왑을 적용합니다([#1912](https://github.com/HKUDS/Vibe-Trading/pull/1912), [#1920](https://github.com/HKUDS/Vibe-Trading/pull/1920), [#1930](https://github.com/HKUDS/Vibe-Trading/pull/1930)). 전체 9건과 제한 사항은 [CHANGELOG](CHANGELOG.md)를 참고하세요.
+
+<details>
+<summary>이전 뉴스</summary>
 
 - **2026-10-17** 🛠️ **Token 사용량과 리서치 신뢰성**: 실행 상세·채팅·swarm에서 모델 사용량을 확인할 수 있습니다([#1890](https://github.com/HKUDS/Vibe-Trading/pull/1890)). 리서치와 선택적 백그라운드 작업에 공통 스케줄러를 적용했으며([#1893](https://github.com/HKUDS/Vibe-Trading/pull/1893)), 실거래 스케줄러는 변경하지 않았습니다. 거래 일지 날짜·시간 결합, 근거 파일 경로, 팩터 동률 처리, 메모리 저장 경로, 수치 오류 처리와 채널 진행 표시를 수정했습니다. [CHANGELOG](CHANGELOG.md)를 참조하세요.
 
@@ -65,9 +68,6 @@
 - **2026-10-15** 🛠️ **모델 비용 관리와 리서치 신뢰성**: 실거래 러너는 판단마다 독립된 세션을 사용하며, 판단 주기와 재시작 후에도 유지되는 일일 사용량 한도를 설정할 수 있습니다([#1854](https://github.com/HKUDS/Vibe-Trading/issues/1854)). 가벼운 백테스트 미리보기와 전체 거래 내역을 함께 제공합니다([#1853](https://github.com/HKUDS/Vibe-Trading/pull/1853), [#1865](https://github.com/HKUDS/Vibe-Trading/pull/1865)). 백분율 근거 계산, 복사한 실행 기록의 중복 제거, 스윙 신호 시점, 암호화폐 라우팅 및 인증 정보 마스킹을 수정했습니다. 범위와 제한은 [CHANGELOG](CHANGELOG.md)를 참고하세요.
 
 - **2026-10-14** 🛠️ **백테스트·검색·문서 읽기 수정**: 위험 지표와 자산 가치 내보내기에 첫 봉의 손익을 반영합니다([#1844](https://github.com/HKUDS/Vibe-Trading/pull/1844)). 세션 검색은 세션 중복을 제거하고 제목을 유지하며 일치한 부분의 문맥을 표시합니다([#1827](https://github.com/HKUDS/Vibe-Trading/pull/1827), [#1834](https://github.com/HKUDS/Vibe-Trading/pull/1834)). PDF/Office 내용 추출을 개선하고 확인할 수 없는 근거 참조를 거부하며, 금융 계산 입력 검증과 인증 정보 마스킹을 강화했습니다.
-
-<details>
-<summary>이전 뉴스</summary>
 
 - **2026-10-13** 🧩 **포트폴리오 가져오기, 전략 적응 및 리서치 도구**: extraETF 보유 내역을 읽기 전용으로 가져와 날짜가 명시된 EUR 평가와 자산 배분 제안을 지원하며, 적응한 하위 전략은 자체 백테스트 근거를 사용합니다([#1170](https://github.com/HKUDS/Vibe-Trading/issues/1170), [#1149](https://github.com/HKUDS/Vibe-Trading/issues/1149)). 연결 테스트를 거친 사용자 지정 모델, Pixel Office 공유 수동 작업 보드, 페르시아어·튀르키예어 UI, mStock 읽기 전용 조회와 Gildata 리서치 데이터를 추가했습니다.
   결제 통화별 회계 처리, Futu 시장 선택과 취득 원가, 홍콩 주식의 종목별 거래 단위, 저장된 검증 설정과 실행 진행 표시를 수정했습니다. 명시적 수치 검증 규칙과 에이전트 루프 분리도 완료했습니다. mStock은 포트폴리오 통합 집계에서 제외되며 Robinhood 옵션 주문 실행은 아직 지원하지 않습니다. 범위와 제약은 [CHANGELOG](CHANGELOG.md)를 참고하세요.
@@ -559,7 +559,7 @@ OHLCV를 넘어 **22개 읽기 전용 데이터 도구**가 펀더멘털과 자�
 
 <img src="https://www.qveris.com/logo-color.png" alt="QVeris" height="36">
 
-**데이터는 기본 무료 라우팅, 필요할 때만 프리미엄.** 기본값은 23개 내장 소스와 차단 위험 기반 폴백이며 key도 비용도 없습니다. QVeris를 켜면 63+ providers와 10,000+ capabilities(per QVeris)로 옵션 Greeks, 고급 펀더멘털, 중국/홍콩/글로벌 데이터, 매크로, 크립토, 뉴스, filings를 보강할 수 있고 실패한 호출은 과금되지 않습니다. Settings → QVeris 또는 `vibe-trading data mode paid`에서 활성화하세요.
+**데이터는 기본 무료 라우팅, 필요할 때만 프리미엄.** 기본값은 29개 내장 소스와 차단 위험 기반 폴백이며 key도 비용도 없습니다. QVeris를 켜면 63+ providers와 10,000+ capabilities(per QVeris)로 옵션 Greeks, 고급 펀더멘털, 중국/홍콩/글로벌 데이터, 매크로, 크립토, 뉴스, filings를 보강할 수 있고 실패한 호출은 과금되지 않습니다. Settings → QVeris 또는 `vibe-trading data mode paid`에서 활성화하세요.
 
 *QVeris disclosure: [Vibe-Trading 추천 링크](https://qveris.ai/?ref=Vyjjo5G_1cAHJA)로 가입하면 **+1,000 크레딧**을 추가로 받고 프로젝트를 후원하게 됩니다.*
 <!-- QVERIS-END -->
@@ -700,7 +700,7 @@ Paper-vs-live는 **구조적 브로커별 런타임 가드**(account-id 형식, 
 | **alpha101** | 101 | Kakushadze (2015), "101 Formulaic Alphas", arXiv:1601.00991 | 수식은 수학적 콘텐츠 |
 | **gtja191** | 191 | 국태군안 (2014), "191 Short-period Trading Alpha Factors" | 수식은 수학적 콘텐츠 |
 | **academic** | 12 | Fama-French 5 + Carhart 모멘텀 (가격 기반 proxy) + Jegadeesh reversal + George-Hwang 52-week-high + Amihud illiquidity + Harvey-Siddique skew + Frazzini-Pedersen betting-against-beta + correlation-rewiring stability | 공개 학술 문헌 |
-| **fundamental** | 4 | PIT-safe SEC company facts — earnings yield, ROE, gross profitability, asset growth (filed-date 기준) | 공개 재무 데이터 |
+| **fundamental** | 20 | PIT-safe SEC company facts(14개, filed-date 기준: earnings yield, book-to-market, ROE, ROA, gross profitability, 성장률, accruals, 레버리지, 현금흐름 수익률 등) + A주 PBR·PSR TTM·배당수익률(3개) + 그 선완(Shenwan) 업종 중립 버전(3개) | 공개 재무 데이터 |
 
 `vibe-trading alpha list`로 카탈로그를 탐색하고, `vibe-trading alpha show <id>`로 수식과 소스 코드를 확인하며, `vibe-trading alpha bench --zoo X --universe Y --period Z`로 zoo 전체를 점수화하고, `vibe-trading alpha compare --all`로 zoo들을 나란히 순위화하세요.
 
@@ -1759,7 +1759,7 @@ Vibe-Trading/
 │   │   │   ├── base.py             #   19개 operator (rank/scale/ts_*/delta/decay_linear/safe_div/vwap)
 │   │   │   ├── registry.py         #   AST-only 메타데이터 로딩 + lazy compute + sanity gate
 │   │   │   ├── bench_runner.py     #   IC + alive/reversed/dead 분류
-│   │   │   └── zoo/                #   qlib158 (154) + alpha101 (101) + gtja191 (191) + academic (12) + fundamental (4)
+│   │   │   └── zoo/                #   qlib158 (154) + alpha101 (101) + gtja191 (191) + academic (12) + fundamental (20)
 │   │   │
 │   │   ├── api/                    # FastAPI 라우트 모듈
 │   │   │   └── alpha_routes.py     #   /alpha/list, /alpha/{id}, /alpha/bench, SSE stream

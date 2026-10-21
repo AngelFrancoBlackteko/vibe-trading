@@ -1,6 +1,6 @@
 {
   "app": {
-    "version": "v0.1.16"
+    "version": "v0.1.17"
   },
   "navigation": {
     "menu": "استعرض الميزات",
@@ -241,16 +241,16 @@
     "deliveryChannelPlaceholder": "telegram أو feishu … (اتركه فارغًا لإبقاء النتائج داخل التطبيق)",
     "deliveryTargetLabel": "وجهة القناة",
     "deliveryTargetPlaceholder": "معرّف محادثة / مجموعة / مستخدم",
-    "deliveryFormatLabel": "Email report format",
-    "deliveryFormatDefault": "Channel default (plain text)",
-    "deliveryFormatHtml": "HTML email",
-    "deliveryFormatPdf": "PDF attachment",
+    "deliveryFormatLabel": "تنسيق تقرير البريد الإلكتروني",
+    "deliveryFormatDefault": "الافتراضي للقناة (نص عادي)",
+    "deliveryFormatHtml": "بريد إلكتروني بتنسيق HTML",
+    "deliveryFormatPdf": "مرفق PDF",
     "proposalPdfProtection": "حماية PDF بكلمة مرور",
     "proposalPdfProtectionOn": "مفعّلة",
     "proposalPdfProtectionOff": "غير مفعّلة",
-    "deliveryFormatDefaultHint": "Keeps the existing plain-text delivery behavior.",
-    "deliveryFormatHtmlHint": "Shows the full report as sanitized HTML in the email body.",
-    "deliveryFormatPdfHint": "Attaches the full report as PDF and keeps only a short notice in the body.",
+    "deliveryFormatDefaultHint": "يحافظ على سلوك التسليم الحالي بالنص العادي.",
+    "deliveryFormatHtmlHint": "يعرض التقرير الكامل بتنسيق HTML منقّح في نص البريد الإلكتروني.",
+    "deliveryFormatPdfHint": "يرفق التقرير الكامل بصيغة PDF ويترك إشعارًا قصيرًا فقط في نص الرسالة.",
     "deliveryHint": "مُعطّل افتراضيًا. يُرسل الملخص **بعد انتهاء** التشغيل، لا عند جدولته.",
     "deliveryTargetRequired": "حدّد وجهة لهذه القناة أو أفرغ حقل القناة.",
     "delivery_none": "سيُرسل إلى {{channel}} بعد التشغيل القادم",

@@ -52,11 +52,14 @@
 
 > ⚠️ **安全警告：** X 账号 `VibeTrading_HKU`、Virtuals 项目 `101845` 及代币合约 `0x640BDBF77b6447E8b7DB7894cED84BD1c40571f4` 均非 Vibe-Trading 官方。我们从未发行或背书任何代币或 meme 币。请勿购买、连接钱包或签名。[详细说明](SECURITY.md#official-channels--impersonation)。
 
-- **2026-10-21** 🛠️ **模拟账户与社区问题修复**：逐日模拟交易已提供 Agent/MCP、CLI、API 和 Web 入口（[#1939](https://github.com/HKUDS/Vibe-Trading/pull/1939)）；回测会提示所选引擎忽略的配置（[#1947](https://github.com/HKUDS/Vibe-Trading/pull/1947)）。资金流日线空响应也会触发备用源，并标明实际来源、区分总净流入与主力净流入。补充 Telegram 配置步骤；交易日志、期货单位、归因、取消上传和目录错误修复详见 [CHANGELOG](CHANGELOG.md)。
+- **2026-10-21** 🚀 **v0.1.17 发布**（[发布说明](https://github.com/HKUDS/Vibe-Trading/releases/tag/v0.1.17)，`pip install -U vibe-trading-ai`）：自 0.1.16 以来共 638 个提交、228 个合并的 PR，另有 41 个 PR 的改动经维护者提交合入，来自 33 位贡献者。**本版主角是逐日模拟交易：** Agent 与 MCP 可调用 `paper_trade_step` 工具，保存的模拟账户可通过 `vibe-trading paper`、REST API 和网页端使用；两者都按已收盘的日线撮合订单或策略，绝不触达券商，保存的账户只向前推进（[#1939](https://github.com/HKUDS/Vibe-Trading/pull/1939)）。**其余大部分是正确性修复，很多属于同一类问题：算不出来的值现在会如实说明，而不是变成一个看似合理的数字。** 没有亏损交易时的盈利因子、无定义的相关系数和无界比率返回 `null`，IC 样本不足的因子会被跳过并说明原因；缺失价格不再被用来拼接收益；拼错或所选引擎不使用的回测配置会在运行卡片中提示。**新增：** 巴西（B3）市场，Alpha Zoo 因子从 462 个增至 478 个，Slack 与 Discord 加入网页端渠道引导配置，邮件报告支持 HTML 或可设密码的 PDF，Run Detail、聊天和 Swarm 显示 Token 用量，`claude-cli` 模型提供方，以及波斯语和土耳其语（界面共 11 种语言）。**今日修复：** 资金流备用源会标明实际来源，并区分总净流入与主力净流入；Telegram 配置步骤已补充说明。感谢 [@rudycelekli](https://github.com/rudycelekli), [@Shizoqua](https://github.com/Shizoqua), [@he-yufeng](https://github.com/he-yufeng), [@shadowinlife](https://github.com/shadowinlife), [@zeus229](https://github.com/zeus229), [@alexwan02](https://github.com/alexwan02), [@Jackzigen](https://github.com/Jackzigen), [@cgycorey](https://github.com/cgycorey), [@MetaAviator](https://github.com/MetaAviator), [@lorenzozanee](https://github.com/lorenzozanee), [@Mikesad](https://github.com/Mikesad), [@remote-controlled-man](https://github.com/remote-controlled-man), [@Romzhou](https://github.com/Romzhou), [@sambazhu](https://github.com/sambazhu), [@wavebyrd](https://github.com/wavebyrd), [@BHhhh-123](https://github.com/BHhhh-123), [@Bortlesboat](https://github.com/Bortlesboat), [@bygordon130-hub](https://github.com/bygordon130-hub), [@davidalmeida90](https://github.com/davidalmeida90), [@DrDLyuan](https://github.com/DrDLyuan), [@Emad211](https://github.com/Emad211), [@Frank-zhu2000](https://github.com/Frank-zhu2000), [@goatyyc](https://github.com/goatyyc), [@hunters1011-ctrl](https://github.com/hunters1011-ctrl), [@incorpore](https://github.com/incorpore), [@mdb1230](https://github.com/mdb1230), [@mminkus](https://github.com/mminkus), [@passionbull](https://github.com/passionbull), [@rwxyx518-prog](https://github.com/rwxyx518-prog), [@ThreeTima](https://github.com/ThreeTima), [@tomaszkubiak-courses](https://github.com/tomaszkubiak-courses) 和 [@xaritoku](https://github.com/xaritoku)！
 
 - **2026-10-20** 🛠️ **回测诊断与研究正确性**：对无法识别的回测配置键发出告警，将未定义的相关性显示为未知而非零，并在重新验证时复用已保存的年化因子（[#1935](https://github.com/HKUDS/Vibe-Trading/pull/1935), [#1933](https://github.com/HKUDS/Vibe-Trading/pull/1933), [#1915](https://github.com/HKUDS/Vibe-Trading/pull/1915)）。同时改进因子样本检查、工具输入校验、交易日志市场分类、数值格式和企业微信流式回复。完整 14 项修复及剩余限制见 [CHANGELOG](CHANGELOG.md)。
 
 - **2026-10-19** 🛠️ **九项金融计算修复**：纠正因子衰减的新旧数据权重、A 股板块涨跌幅与北交所代码识别、SEC 第四季度流量推导及事件研究估计窗口。保留富途持仓代码身份和极小 MACD／布林带数值；拒绝负特异方差，让 Yahoo 外汇代码使用对应货币对的点差与隔夜费（[#1912](https://github.com/HKUDS/Vibe-Trading/pull/1912)、[#1920](https://github.com/HKUDS/Vibe-Trading/pull/1920)、[#1930](https://github.com/HKUDS/Vibe-Trading/pull/1930)）。完整九项修复与限制见 [CHANGELOG](CHANGELOG.md)。
+
+<details>
+<summary>更早的新闻</summary>
 
 - **2026-10-17** 🛠️ **Token 用量与研究可靠性**：运行详情、聊天和 swarm 展示模型用量（[#1890](https://github.com/HKUDS/Vibe-Trading/pull/1890)）。研究任务与可选后台任务采用共享调度内核（[#1893](https://github.com/HKUDS/Vibe-Trading/pull/1893)），实盘调度保持不变。修复交易日志日期时间配对、证据路径、因子并列值、记忆目录、数值错误处理与渠道进度。详见 [CHANGELOG](CHANGELOG.md)。
 
@@ -65,9 +68,6 @@
 - **2026-10-15** 🛠️ **模型费用控制与研究可靠性**：实盘执行程序每次决策使用独立会话，支持可配置频率与持久化每日用量预算（[#1854](https://github.com/HKUDS/Vibe-Trading/issues/1854)）。回测采用轻量预览，同时保留完整交易记录（[#1853](https://github.com/HKUDS/Vibe-Trading/pull/1853)、[#1865](https://github.com/HKUDS/Vibe-Trading/pull/1865)）。修正百分比证据运算、复制回测历史去重、波峰波谷信号时点、加密货币路由与凭证脱敏。范围及限制见 [CHANGELOG](CHANGELOG.md)。
 
 - **2026-10-14** 🛠️ **回测、搜索与文档读取修复**：风险比率与净值导出纳入首根 K 线盈亏（[#1844](https://github.com/HKUDS/Vibe-Trading/pull/1844)）。会话搜索按不同会话返回结果，保留标题并展示匹配上下文（[#1827](https://github.com/HKUDS/Vibe-Trading/pull/1827)、[#1834](https://github.com/HKUDS/Vibe-Trading/pull/1834)）。改进 PDF／Office 内容提取，拒绝无法解析的证据引用，并加强金融计算输入校验与凭证脱敏。
-
-<details>
-<summary>更早的新闻</summary>
 
 - **2026-10-13** 🧩 **组合导入、策略适配与研究工具**：只读导入 extraETF 持仓，支持带日期的欧元估值与配置建议；适配后的子策略使用自己的回测证据（[#1170](https://github.com/HKUDS/Vibe-Trading/issues/1170)、[#1149](https://github.com/HKUDS/Vibe-Trading/issues/1149)）。新增经测试的自定义模型端点、共享的 Pixel Office 手动任务板、波斯语／土耳其语界面、mStock 只读查询及聚源研究数据。
   修正按结算币种记账、富途市场选择与成本口径、港股逐标的每手股数、已保存的验证参数和运行进度；完成声明式数值核验与 Agent 循环拆分。mStock 暂不纳入组合汇总，Robinhood 期权执行仍不可用。范围与限制见 [CHANGELOG](CHANGELOG.md)。
@@ -574,7 +574,7 @@ LONGBRIDGE_ACCESS_TOKEN=...
 
 <img src="https://www.qveris.com/logo-color.png" alt="QVeris" height="36">
 
-**数据可走免费，也可按需上付费。** 默认仍是 23 个内置免费源：自动 fallback、无需 key、无成本。通过 QVeris 可用一个 key 解锁 63+ provider、10,000+ capabilities（per QVeris），覆盖期权 Greeks、高级基本面、中国/港股/全球数据、宏观、加密、新闻与 filings；失败调用不扣费。入口在 Settings → QVeris 或 `vibe-trading data mode paid`。
+**数据可走免费，也可按需上付费。** 默认仍是 29 个内置免费源：自动 fallback、无需 key、无成本。通过 QVeris 可用一个 key 解锁 63+ provider、10,000+ capabilities（per QVeris），覆盖期权 Greeks、高级基本面、中国/港股/全球数据、宏观、加密、新闻与 filings；失败调用不扣费。入口在 Settings → QVeris 或 `vibe-trading data mode paid`。
 
 *QVeris 披露：通过 [Vibe-Trading 推荐链接](https://qveris.ai/?ref=Vyjjo5G_1cAHJA) 注册可额外获得 **1,000 积分**，同时支持本项目。*
 <!-- QVERIS-END -->
@@ -713,7 +713,7 @@ LONGBRIDGE_ACCESS_TOKEN=...
 | **alpha101** | 101 | Kakushadze (2015), "101 Formulaic Alphas", arXiv:1601.00991 | 公式属于数学内容 |
 | **gtja191** | 191 | 国君证券 (2014)《191 个短周期交易型 alpha 因子》研报 | 公式属于数学内容 |
 | **academic** | 12 | Fama-French 5 因子 + Carhart 动量（基于价格的代理实现） + Jegadeesh reversal + George-Hwang 52-week-high + Amihud illiquidity + Harvey-Siddique skew + Frazzini-Pedersen betting-against-beta + correlation-rewiring 稳定性 | 公开学术文献 |
-| **fundamental** | 4 | PIT 安全的 SEC company facts——盈利收益率、ROE、毛利率因子、资产增长（按 filed-date 锚定） | 公开财务数据 |
+| **fundamental** | 20 | PIT 安全的 SEC company facts（14 个，按 filed-date 锚定：盈利收益率、账面市值比、ROE、ROA、毛利率因子、增长、应计、杠杆、现金流收益率等）+ A 股市净率、市销率 TTM、股息率（3 个）+ 其申万行业中性版本（3 个） | 公开财务数据 |
 
 运行 `vibe-trading alpha list` 浏览全部因子，`vibe-trading alpha show <id>` 查看公式与源码，`vibe-trading alpha bench --zoo X --universe Y --period Z` 给一整个 zoo 打分，`vibe-trading alpha compare --all` 并排对比各个 zoo。
 
@@ -1757,7 +1757,7 @@ Vibe-Trading/
 │   │   │   ├── base.py             #   19 个算子（rank/scale/ts_*/delta/decay_linear/safe_div/vwap）
 │   │   │   ├── registry.py         #   纯 AST 元数据加载 + 惰性计算 + sanity 校验
 │   │   │   ├── bench_runner.py     #   IC + alive/reversed/dead 分类
-│   │   │   └── zoo/                #   qlib158 (154) + alpha101 (101) + gtja191 (191) + academic (12) + fundamental (4)
+│   │   │   └── zoo/                #   qlib158 (154) + alpha101 (101) + gtja191 (191) + academic (12) + fundamental (20)
 │   │   │
 │   │   ├── api/                    # FastAPI 路由模块
 │   │   │   └── alpha_routes.py     #   /alpha/list、/alpha/{id}、/alpha/bench、SSE 流

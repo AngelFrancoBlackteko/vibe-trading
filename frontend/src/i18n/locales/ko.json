@@ -1,6 +1,6 @@
 {
   "app": {
-    "version": "v0.1.16"
+    "version": "v0.1.17"
   },
   "navigation": {
     "menu": "기능 둘러보기",
@@ -241,16 +241,16 @@
     "deliveryChannelPlaceholder": "telegram, feishu … (비우면 앱 안에만 남습니다)",
     "deliveryTargetLabel": "채널 대상",
     "deliveryTargetPlaceholder": "채팅 / 그룹 / 사용자 ID",
-    "deliveryFormatLabel": "Email report format",
-    "deliveryFormatDefault": "Channel default (plain text)",
-    "deliveryFormatHtml": "HTML email",
-    "deliveryFormatPdf": "PDF attachment",
+    "deliveryFormatLabel": "이메일 보고서 형식",
+    "deliveryFormatDefault": "채널 기본값(일반 텍스트)",
+    "deliveryFormatHtml": "HTML 이메일",
+    "deliveryFormatPdf": "PDF 첨부 파일",
     "proposalPdfProtection": "PDF 비밀번호 보호",
     "proposalPdfProtectionOn": "켜짐",
     "proposalPdfProtectionOff": "꺼짐",
-    "deliveryFormatDefaultHint": "Keeps the existing plain-text delivery behavior.",
-    "deliveryFormatHtmlHint": "Shows the full report as sanitized HTML in the email body.",
-    "deliveryFormatPdfHint": "Attaches the full report as PDF and keeps only a short notice in the body.",
+    "deliveryFormatDefaultHint": "기존 일반 텍스트 전송 방식을 유지합니다.",
+    "deliveryFormatHtmlHint": "전체 보고서를 정제된 HTML로 이메일 본문에 표시합니다.",
+    "deliveryFormatPdfHint": "전체 보고서를 PDF로 첨부하고 본문에는 짧은 안내만 남깁니다.",
     "deliveryHint": "기본은 꺼짐입니다. 브리핑은 예약 시점이 아니라 실행이 **끝난 뒤** 전달됩니다.",
     "deliveryTargetRequired": "해당 채널의 대상을 지정하거나 채널을 비워 주세요.",
     "delivery_none": "다음 실행이 끝나면 {{channel}}(으)로 전달합니다",

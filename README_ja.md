@@ -52,11 +52,14 @@
 
 > ⚠️ **セキュリティ警告：** Xアカウント `VibeTrading_HKU`、Virtualsプロジェクト `101845`、およびトークンコントラクト `0x640BDBF77b6447E8b7DB7894cED84BD1c40571f4` は、いずれもVibe-Trading公式のものではありません。Vibe-Tradingはこれまで、いかなるトークンやミームコインも発行・公認していません。購入、ウォレットの接続、署名は行わないでください。[詳細](SECURITY.md#official-channels--impersonation)
 
-- **2026-10-21** 🛠️ **ペーパー口座とコミュニティの問題修正**：日次ペーパー取引に Agent/MCP、CLI、API、Web の入口を追加（[#1939](https://github.com/HKUDS/Vibe-Trading/pull/1939)）。選択したエンジンが無視する設定を警告します（[#1947](https://github.com/HKUDS/Vibe-Trading/pull/1947)）。資金フローの日次空レスポンスでも代替ソースを試し、実際の出所を表示して総純流入と大口純流入を区別します。Telegram の設定手順を補足。その他の修正と制約は [CHANGELOG](CHANGELOG.md) を参照してください。
+- **2026-10-21** 🚀 **v0.1.17 リリース**（[リリースノート](https://github.com/HKUDS/Vibe-Trading/releases/tag/v0.1.17)、`pip install -U vibe-trading-ai`）：0.1.16 以降のコミット 638 件とマージ済みプルリクエスト 228 件に加え、メンテナーのコミット経由で取り込まれたプルリクエストが 41 件あり、貢献者は 33 人です。**目玉は日次ペーパー取引です：** Agent と MCP 向けの `paper_trade_step` ツールと、`vibe-trading paper`・REST API・Web ページから使える保存型のペーパー口座が、確定した日足に対して注文や戦略を約定させます。ブローカーには一切到達せず、保存された口座は前にしか進みません（[#1939](https://github.com/HKUDS/Vibe-Trading/pull/1939)）。**残りの大半は正確性の修正で、その多くが同じ形をしています：計算できない値は、もっともらしい数字に化けるのではなく、計算できないことをそのまま示すようになりました。** 負けトレードのないプロフィットファクター、未定義の相関、上限のない比率は `null` を返し、IC の観測数が足りないファクターは理由付きでスキップされます。欠損した価格がリターンをつなぐことはなくなり、綴りを誤った設定や選択したエンジンが使わないバックテスト設定は実行カードで警告されます。**新機能：** ブラジル（B3）市場、Alpha Zoo のファクターが 462 から 478 に、Slack と Discord のガイド付きチャネル設定、HTML またはパスワード保護できる PDF のメールレポート、Run Detail・チャット・Swarm での Token 使用量表示、`claude-cli` プロバイダー、ペルシャ語とトルコ語の追加（UI は 11 言語）。**本日の修正：** 資金フローのフォールバックが実際のデータソースを示し、総フローと主力フローを分けるようになりました。Telegram の設定手順も明確にしました。[@rudycelekli](https://github.com/rudycelekli)、[@Shizoqua](https://github.com/Shizoqua)、[@he-yufeng](https://github.com/he-yufeng)、[@shadowinlife](https://github.com/shadowinlife)、[@zeus229](https://github.com/zeus229)、[@alexwan02](https://github.com/alexwan02)、[@Jackzigen](https://github.com/Jackzigen)、[@cgycorey](https://github.com/cgycorey)、[@MetaAviator](https://github.com/MetaAviator)、[@lorenzozanee](https://github.com/lorenzozanee)、[@Mikesad](https://github.com/Mikesad)、[@remote-controlled-man](https://github.com/remote-controlled-man)、[@Romzhou](https://github.com/Romzhou)、[@sambazhu](https://github.com/sambazhu)、[@wavebyrd](https://github.com/wavebyrd)、[@BHhhh-123](https://github.com/BHhhh-123)、[@Bortlesboat](https://github.com/Bortlesboat)、[@bygordon130-hub](https://github.com/bygordon130-hub)、[@davidalmeida90](https://github.com/davidalmeida90)、[@DrDLyuan](https://github.com/DrDLyuan)、[@Emad211](https://github.com/Emad211)、[@Frank-zhu2000](https://github.com/Frank-zhu2000)、[@goatyyc](https://github.com/goatyyc)、[@hunters1011-ctrl](https://github.com/hunters1011-ctrl)、[@incorpore](https://github.com/incorpore)、[@mdb1230](https://github.com/mdb1230)、[@mminkus](https://github.com/mminkus)、[@passionbull](https://github.com/passionbull)、[@rwxyx518-prog](https://github.com/rwxyx518-prog)、[@ThreeTima](https://github.com/ThreeTima)、[@tomaszkubiak-courses](https://github.com/tomaszkubiak-courses)、[@xaritoku](https://github.com/xaritoku) に感謝します！
 
 - **2026-10-20** 🛠️ **バックテスト診断と研究結果の正確性**：認識されない設定キーを警告し、未定義の相関をゼロではなく不明として表示。再検証では保存済みの年率換算係数を再利用します（[#1935](https://github.com/HKUDS/Vibe-Trading/pull/1935), [#1933](https://github.com/HKUDS/Vibe-Trading/pull/1933), [#1915](https://github.com/HKUDS/Vibe-Trading/pull/1915)）。因子のサンプル数チェック、ツール入力検証、取引日誌の市場分類、数値表示、WeComのストリーミング返信も改善。全14件の修正と残る制約は [CHANGELOG](CHANGELOG.md)。
 
 - **2026-10-19** 🛠️ **金融計算の9件の修正**：因子の減衰ウェイト、A株の市場別値幅制限と北京銘柄コード、SEC第4四半期のフロー推計、イベント分析の推定期間を修正。Futu保有銘柄の識別と微小なMACD・ボリンジャーバンドの値を保持し、負の固有分散を拒否。Yahooの為替コードにも通貨ペア別スプレッドとスワップを適用します（[#1912](https://github.com/HKUDS/Vibe-Trading/pull/1912)、[#1920](https://github.com/HKUDS/Vibe-Trading/pull/1920)、[#1930](https://github.com/HKUDS/Vibe-Trading/pull/1930)）。全9件の詳細と制約は [CHANGELOG](CHANGELOG.md)。
+
+<details>
+<summary>過去のニュース</summary>
 
 - **2026-10-17** 🛠️ **Token 使用量とリサーチの信頼性**：実行詳細・チャット・swarm でモデル使用量を確認できます（[#1890](https://github.com/HKUDS/Vibe-Trading/pull/1890)）。リサーチと任意のバックグラウンドジョブに共通スケジューラを導入しました（[#1893](https://github.com/HKUDS/Vibe-Trading/pull/1893)）。実取引のスケジューラは変更していません。取引記録の日時結合、根拠ファイルのパス、因子の同値処理、メモリ保存先、数値エラー処理、チャネル進捗を修正。詳細は [CHANGELOG](CHANGELOG.md)。
 
@@ -65,9 +68,6 @@
 - **2026-10-15** 🛠️ **モデル利用費用の管理とリサーチの信頼性**：ライブランナーは判断ごとに独立したセッションを使い、判断間隔と永続化された日次利用上限を設定できます（[#1854](https://github.com/HKUDS/Vibe-Trading/issues/1854)）。軽量なバックテストプレビューと完全な取引履歴を両立（[#1853](https://github.com/HKUDS/Vibe-Trading/pull/1853)、[#1865](https://github.com/HKUDS/Vibe-Trading/pull/1865)）。百分率の根拠計算、コピーした実行履歴の重複排除、スイング信号の発生時点、暗号資産のルーティング、認証情報のマスキングを修正しました。範囲と制約は [CHANGELOG](CHANGELOG.md) を参照。
 
 - **2026-10-14** 🛠️ **バックテスト・検索・文書読み取りの修正**：リスク指標と資産推移のエクスポートに最初のバーの損益を反映（[#1844](https://github.com/HKUDS/Vibe-Trading/pull/1844)）。セッション検索は重複するセッションを除き、タイトルを保持して一致箇所の前後を表示します（[#1827](https://github.com/HKUDS/Vibe-Trading/pull/1827)、[#1834](https://github.com/HKUDS/Vibe-Trading/pull/1834)）。PDF／Office の内容抽出を改善し、解決できない根拠参照を拒否。金融計算の入力検証と認証情報のマスキングも強化しました。
-
-<details>
-<summary>過去のニュース</summary>
 
 - **2026-10-13** 🧩 **ポートフォリオ取り込み・戦略適応・調査ツール**：extraETF の保有明細を読み取り専用で取り込み、日付付きのユーロ評価と資産配分案に対応。適応後の子戦略は自身のバックテスト結果を根拠に使います（[#1170](https://github.com/HKUDS/Vibe-Trading/issues/1170)、[#1149](https://github.com/HKUDS/Vibe-Trading/issues/1149)）。接続テスト済みのカスタムモデル、Pixel Office の共有手動タスクボード、ペルシャ語・トルコ語 UI、mStock の読み取り専用照会、Gildata の調査データを追加しました。
   決済通貨別の損益集計、Futu の市場選択と取得原価、香港株の銘柄別売買単位、保存済み検証設定、実行進捗を修正。数値検証ルールの明示的な登録とエージェントループの分割も完了しました。mStock は引き続きポートフォリオ集計の対象外で、Robinhood のオプション注文は未対応です。範囲と制約は [CHANGELOG](CHANGELOG.md) を参照。
@@ -559,7 +559,7 @@ OHLCV にとどまらず、**22 の読み取り専用データツール**がフ�
 
 <img src="https://www.qveris.com/logo-color.png" alt="QVeris" height="36">
 
-**データは無料ルーティングが標準、必要なときだけプレミアム。** 既定では 23 の内蔵ソースが自動フォールバックし、key も費用も不要です。QVeris を使うと、63+ providers と 10,000+ capabilities（per QVeris）で、オプション Greeks、高度なファンダメンタルズ、中国・香港・グローバルデータ、マクロ、暗号資産、ニュース、filings を補えます。失敗した call は課金されません。Settings → QVeris または `vibe-trading data mode paid` で有効化できます。
+**データは無料ルーティングが標準、必要なときだけプレミアム。** 既定では 29 の内蔵ソースが自動フォールバックし、key も費用も不要です。QVeris を使うと、63+ providers と 10,000+ capabilities（per QVeris）で、オプション Greeks、高度なファンダメンタルズ、中国・香港・グローバルデータ、マクロ、暗号資産、ニュース、filings を補えます。失敗した call は課金されません。Settings → QVeris または `vibe-trading data mode paid` で有効化できます。
 
 *QVeris disclosure: [Vibe-Trading の紹介リンク](https://qveris.ai/?ref=Vyjjo5G_1cAHJA) から登録すると **+1,000 クレジット** が追加付与され、プロジェクトの支援にもなります。*
 <!-- QVERIS-END -->
@@ -700,7 +700,7 @@ Paper-vs-live is a **structural per-broker runtime guard** (account-id format, h
 | **alpha101** | 101 | Kakushadze (2015)、"101 Formulaic Alphas"、arXiv:1601.00991 | Formula は数学的内容 |
 | **gtja191** | 191 | 国泰君安 (2014)、「191 短周期取引型 alpha 因子」 | Formula は数学的内容 |
 | **academic** | 12 | Fama-French 5 + Carhart momentum（価格ベースの proxy） + Jegadeesh reversal + George-Hwang 52-week-high + Amihud illiquidity + Harvey-Siddique skew + Frazzini-Pedersen betting-against-beta + correlation-rewiring stability | 公開された学術文献 |
-| **fundamental** | 4 | PIT セーフな SEC company facts — earnings yield、ROE、gross profitability、asset growth（filed-date 基準） | 公開財務データ |
+| **fundamental** | 20 | PIT セーフな SEC company facts（14 個、filed-date 基準：earnings yield、book-to-market、ROE、ROA、gross profitability、成長率、accruals、レバレッジ、キャッシュフロー利回りなど）+ A 株の PBR・PSR TTM・配当利回り（3 個）+ その申万業種中立版（3 個） | 公開財務データ |
 
 `vibe-trading alpha list` で閲覧、`vibe-trading alpha show <id>` で formula + ソース、`vibe-trading alpha bench --zoo X --universe Y --period Z` で zoo 全体をスコアリング、`vibe-trading alpha compare --all` で zoo 同士を並べてランク付けできます。
 
@@ -1762,7 +1762,7 @@ Vibe-Trading/
 │   │   │   ├── base.py             #   19 個のオペレーター (rank/scale/ts_*/delta/decay_linear/safe_div/vwap)
 │   │   │   ├── registry.py         #   AST 限定のメタデータ読み込み + 遅延計算 + sanity gate
 │   │   │   ├── bench_runner.py     #   IC + alive/reversed/dead 分類
-│   │   │   └── zoo/                #   qlib158 (154) + alpha101 (101) + gtja191 (191) + academic (12) + fundamental (4)
+│   │   │   └── zoo/                #   qlib158 (154) + alpha101 (101) + gtja191 (191) + academic (12) + fundamental (20)
 │   │   │
 │   │   ├── api/                    # FastAPI ルートモジュール
 │   │   │   └── alpha_routes.py     #   /alpha/list、/alpha/{id}、/alpha/bench、SSE ストリーム

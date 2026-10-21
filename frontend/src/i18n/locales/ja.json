@@ -1,6 +1,6 @@
 {
   "app": {
-    "version": "v0.1.16"
+    "version": "v0.1.17"
   },
   "navigation": {
     "menu": "機能を見る",
@@ -241,16 +241,16 @@
     "deliveryChannelPlaceholder": "telegram、feishu など（空欄ならアプリ内のみ）",
     "deliveryTargetLabel": "チャンネル送信先",
     "deliveryTargetPlaceholder": "チャット / グループ / ユーザー ID",
-    "deliveryFormatLabel": "Email report format",
-    "deliveryFormatDefault": "Channel default (plain text)",
-    "deliveryFormatHtml": "HTML email",
-    "deliveryFormatPdf": "PDF attachment",
+    "deliveryFormatLabel": "メールレポートの形式",
+    "deliveryFormatDefault": "チャネルの既定（プレーンテキスト）",
+    "deliveryFormatHtml": "HTMLメール",
+    "deliveryFormatPdf": "PDF添付",
     "proposalPdfProtection": "PDFのパスワード保護",
     "proposalPdfProtectionOn": "有効",
     "proposalPdfProtectionOff": "無効",
-    "deliveryFormatDefaultHint": "Keeps the existing plain-text delivery behavior.",
-    "deliveryFormatHtmlHint": "Shows the full report as sanitized HTML in the email body.",
-    "deliveryFormatPdfHint": "Attaches the full report as PDF and keeps only a short notice in the body.",
+    "deliveryFormatDefaultHint": "既存のプレーンテキスト配信の動作を維持します。",
+    "deliveryFormatHtmlHint": "レポート全文をサニタイズ済みのHTMLとしてメール本文に表示します。",
+    "deliveryFormatPdfHint": "レポート全文をPDFとして添付し、本文には短いお知らせのみを残します。",
     "deliveryHint": "既定はオフです。ブリーフィングは実行の**完了後**に配信され、スケジュール時ではありません。",
     "deliveryTargetRequired": "そのチャンネルの送信先を指定するか、チャンネルを空にしてください。",
     "delivery_none": "次回の実行完了後に {{channel}} へ配信します",
