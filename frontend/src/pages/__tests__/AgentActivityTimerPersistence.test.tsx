@@ -71,7 +71,7 @@ describe("Agent activity elapsed clock survives navigation", () => {
     });
   });
 
-  it("finishes the first answer without starting a paid title request", async () => {
+  it("generates a summary title after the first answer and refreshes the sidebar", async () => {
     const router = createMemoryRouter(
       [{ path: "/", element: <Agent /> }],
       { initialEntries: ["/?session=session-one"] },
@@ -92,8 +92,8 @@ describe("Agent activity elapsed clock survives navigation", () => {
         });
       });
       expect(useAgentStore.getState().messages.some((message) => message.content === "Hello back")).toBe(true);
-      expect(refresh).toHaveBeenCalled();
-      expect(apiMock.autoTitleSession).not.toHaveBeenCalled();
+      expect(apiMock.autoTitleSession).toHaveBeenCalledWith("session-one");
+      await waitFor(() => expect(refresh).toHaveBeenCalled());
     } finally {
       window.removeEventListener("vibe:sessions-refresh", refresh);
     }

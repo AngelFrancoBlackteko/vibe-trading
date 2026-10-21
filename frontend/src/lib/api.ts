@@ -536,8 +536,8 @@ export const api = {
   createSession: (title?: string) => request<SessionItem>("/sessions", { method: "POST", body: JSON.stringify({ title: title || "" }) }),
   deleteSession: (sid: string) => request<{ status: string }>(`/sessions/${sid}`, { method: "DELETE" }),
   renameSession: (sid: string, title: string) => request<{ status: string }>(`/sessions/${sid}`, { method: "PATCH", body: JSON.stringify({ title }) }),
-  // Optional paid title generation; ordinary chat uses its prompt-derived title.
-  // The backend refuses to overwrite a manual rename.
+  // Codex-style LLM summary title from the first exchange; backend refuses to
+  // overwrite a manual rename, so this is safe to fire-and-forget.
   autoTitleSession: (sid: string) => request<{ status: string; title: string }>(`/sessions/${sid}/title/auto`, { method: "POST" }),
   // Scheduled research: cadence + timezone are stored as authored (local
   // wall-clock cron + IANA key), so list rows render without any UTC math.

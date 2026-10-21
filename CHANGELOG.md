@@ -9,7 +9,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 - Reduce agent request overhead with on-demand tool schemas while keeping the
   complete tool catalog and existing execution permissions. Ordinary backtests
-  no longer request extra attribution automatically; chat titles reuse the prompt.
+  no longer request extra attribution automatically. Automatic summary titles
+  remain available after the first chat exchange.
 - Preserve oversized tool results in readable run artifacts and stop Swarm from
   clearing new observations before the model sees them. Context pressure uses
   the model window and includes tool schemas.

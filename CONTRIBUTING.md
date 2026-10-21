@@ -33,8 +33,8 @@ The discovery policy is packaged in `src/agent/tool_loading.json`.
 A direct lookup uses its tool contract. A normal backtest reports results,
 validation warnings and limitations; additional attribution or optimization
 follows the user's request. Existing numerical grounding and live order gates
-remain in place. Web chat uses the prompt-derived session title without an
-additional automatic model request.
+remain in place. Web chat still generates a model-written summary title after
+the first completed exchange, without overwriting a manual rename.
 
 Large tool results are redacted and saved under the current run's `tool-results/`
 when its tools can read the files. The bounded receipt names the original file
