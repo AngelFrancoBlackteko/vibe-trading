@@ -25,6 +25,26 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.1.18] — 2026-10-21
 
+Same-day follow-up to 0.1.17: 12 commits (10 non-merge), no new external pull
+requests. It ships the fixes made on main after 0.1.17 — `mcp>=1.30` so the
+HTTP MCP transport reclaims sessions, connect-time checks for custom model
+endpoints (including fake-IP proxy hosts), grounding of `run_dir/…` refs and
+signed amounts, Beijing codes in correlation, the macOS timeout fix and the
+sdist contents — together with a leaner agent runtime: tool schemas load on
+demand through `load_tools`, oversized tool results stay readable in the run
+directory, Swarm sizes its context by the model window, and usage accounting
+covers compaction, cancelled responses and failed streams. On the 0.1.17
+pre-release verification prompt (DeepSeek V4 Pro, a 20/60 SMA backtest on
+AAPL.US) a run took 7 model calls instead of 12 and 152K input tokens instead
+of 706K, and reported the same figures.
+
+### Known issues
+
+- A retried provider error (a connection reset or rate limit) can halt live
+  model decisions until the next UTC day, and a research goal's final answer
+  that crosses its token budget is discarded. Both are fixed on main (see
+  Unreleased) and ship with the next release.
+
 ### Changed
 
 - Reduce agent request overhead with on-demand tool schemas while keeping the
