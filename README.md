@@ -1490,6 +1490,8 @@ Generic journals accept a complete `datetime` column or separate `date` and
 `time` columns (case-insensitive). Split columns are combined before sorting
 and FIFO matching; Excel date serials and time fractions are supported.
 A complete `datetime` column takes precedence when all three are present.
+Journal analysis rejects missing or invalid dates in any parsed record,
+including dividends, before applying filters. Correct those dates and retry.
 Rows with equal timestamps retain their source-file order for FIFO matching.
 This preserves the supplied sequence; it does not reconstruct missing fill order.
 
