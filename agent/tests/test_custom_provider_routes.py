@@ -45,10 +45,37 @@ def test_custom_provider_base_url_rejects_embedded_credentials() -> None:
         custom_provider_routes._validate_custom_base_url("https://user:pass@example.test/v1")
 
 
-@pytest.mark.parametrize("base_url", ["http://127.0.0.1/v1", "http://localhost/v1", "http://169.254.169.254/v1"])
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "http://127.0.0.1/v1",
+        "http://localhost/v1",
+        "http://169.254.169.254/v1",
+        "http://100.100.100.200/v1",
+        "http://[::ffff:127.0.0.1]/v1",
+        "http://[::ffff:100.100.100.200]/v1",
+    ],
+)
 def test_custom_provider_base_url_rejects_local_targets(base_url: str) -> None:
     with pytest.raises(ValueError):
         custom_provider_routes._validate_custom_base_url(base_url)
+
+
+def test_custom_provider_base_url_accepts_a_public_address() -> None:
+    assert custom_provider_routes._validate_custom_base_url("https://8.8.8.8/v1") == "https://8.8.8.8/v1"
+
+
+@pytest.mark.parametrize("resolved", ["100.100.100.200", "10.0.0.5", "::ffff:169.254.169.254"])
+def test_custom_provider_dns_target_rejects_non_public_resolution(
+    monkeypatch: pytest.MonkeyPatch, resolved: str
+) -> None:
+    monkeypatch.setattr(
+        custom_provider_routes.socket,
+        "getaddrinfo",
+        lambda *_args, **_kwargs: [(None, None, None, "", (resolved, 0))],
+    )
+    with pytest.raises(ValueError, match="resolves to a local or private network address"):
+        custom_provider_routes._reject_private_dns_targets("https://provider.example/v1")
 
 
 def test_store_never_serializes_api_key(tmp_path: Path) -> None:

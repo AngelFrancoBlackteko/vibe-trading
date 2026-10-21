@@ -43,6 +43,26 @@ class CustomProviderActivateRequest(BaseModel):
     confirm: bool = False
 
 
+def _is_non_public_address(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    """Return whether a provider endpoint address is outside the public internet.
+
+    ``is_private`` misses the shared address space 100.64.0.0/10, which holds
+    Alibaba Cloud's metadata service (100.100.100.200); ``is_global`` covers it
+    together with loopback, link-local, reserved and documentation ranges. An
+    IPv4-mapped IPv6 address is judged by the IPv4 address it carries.
+
+    Args:
+        address: The literal or resolved endpoint address.
+
+    Returns:
+        True when the address must not be used as a provider endpoint.
+    """
+    mapped = getattr(address, "ipv4_mapped", None)
+    if mapped is not None:
+        address = mapped
+    return not address.is_global or address.is_multicast
+
+
 def _validate_custom_base_url(value: str) -> str:
     normalized = value.strip().rstrip("/")
     parsed = urlsplit(normalized)
@@ -62,14 +82,7 @@ def _validate_custom_base_url(value: str) -> str:
         address = ipaddress.ip_address(hostname)
     except ValueError:
         address = None
-    if address is not None and (
-        address.is_loopback
-        or address.is_private
-        or address.is_link_local
-        or address.is_reserved
-        or address.is_multicast
-        or address.is_unspecified
-    ):
+    if address is not None and _is_non_public_address(address):
         raise ValueError("Provider base URL cannot target local or private network addresses")
     if normalized.endswith("/chat/completions"):
         normalized = normalized[:-len("/chat/completions")]
@@ -86,14 +99,7 @@ def _reject_private_dns_targets(base_url: str) -> None:
         raise ValueError("Provider hostname could not be resolved") from exc
     for result in results:
         address = ipaddress.ip_address(result[4][0])
-        if (
-            address.is_loopback
-            or address.is_private
-            or address.is_link_local
-            or address.is_reserved
-            or address.is_multicast
-            or address.is_unspecified
-        ):
+        if _is_non_public_address(address):
             raise ValueError("Provider hostname resolves to a local or private network address")
 
 
