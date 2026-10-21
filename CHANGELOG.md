@@ -5,6 +5,24 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Reduce agent request overhead with on-demand tool schemas while keeping the
+  complete tool catalog and existing execution permissions. Ordinary backtests
+  no longer request extra attribution automatically; chat titles reuse the prompt.
+- Preserve oversized tool results in readable run artifacts and stop Swarm from
+  clearing new observations before the model sees them. Context pressure uses
+  the model window and includes tool schemas.
+
+### Fixed
+
+- Include compaction, cancelled responses and failed streams in usage accounting;
+  stop further work when a research goal exhausts its token budget. Forward the
+  configured output cap to both DeepSeek adapters.
+- Redact credentials before tool results reach model context or replay caches,
+  and reject incomplete compatible-provider streams instead of releasing a
+  truncated answer or tool call.
+
 ## [0.1.17] — 2026-10-21
 
 Rolls up 638 commits / 228 merged pull requests since 0.1.16, plus 41 pull

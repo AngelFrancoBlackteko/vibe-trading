@@ -1037,13 +1037,9 @@ export function Agent() {
           });
         }
 
-        // First completed exchange → ask the backend for a Codex-style
-        // summary title, then nudge the sidebar to re-list sessions.
-        if (act().messages.filter((message) => message.type === "user").length === 1) {
-          api.autoTitleSession(sid)
-            .then(() => window.dispatchEvent(new Event("vibe:sessions-refresh")))
-            .catch(() => {});
-        }
+        // Session creation already derives a title from the user's prompt.
+        // Refresh the sidebar without another paid model call after answering.
+        window.dispatchEvent(new Event("vibe:sessions-refresh"));
 
         // Detect Shadow Account id if render_shadow_report fired successfully this turn
         const shadowCall = completedTools.find(

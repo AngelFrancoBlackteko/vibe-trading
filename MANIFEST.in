@@ -14,6 +14,9 @@ include docker-compose.yml
 # Developer entry-point template
 include agent/.env.example
 
+# Runtime schema-loading policy
+recursive-include agent/src/agent *.json
+
 # Alpha Zoo factor metadata and per-zoo LICENSE / NOTICE files
 recursive-include agent/src/factors *.yaml *.md
 

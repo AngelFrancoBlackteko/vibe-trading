@@ -793,6 +793,12 @@ if ChatOpenAI is not None:
             is absent, breaking ReAct continuations after a tool call (#39).
             """
             payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+            # LangChain rewrites max_tokens to OpenAI's newer spelling.
+            # DeepSeek documents max_tokens and silently ignores the other
+            # field, leaving its much larger thinking-mode default in force.
+            if "messages" in payload and self._capabilities().name == "deepseek":
+                if "max_completion_tokens" in payload:
+                    payload["max_tokens"] = payload.pop("max_completion_tokens")
             # Models that rejected `temperature` before omit it up front (#1223).
             if str(self.model_name) in _ANTHROPIC_TEMPERATURE_UNSUPPORTED:
                 payload.pop("temperature", None)
@@ -1018,6 +1024,7 @@ def _build_native_deepseek(
     creds = get_llm_credentials("deepseek", model)
     api_key = creds["api_key"]
     base_url = creds["base_url"]
+    output_limit = get_env_config().llm.langchain_max_tokens
     return chat_deepseek(
         model=model,
         temperature=temperature,
@@ -1026,6 +1033,7 @@ def _build_native_deepseek(
         callbacks=callbacks,
         api_key=api_key or None,
         base_url=base_url or None,
+        **({"max_tokens": output_limit} if output_limit is not None else {}),
     )
 
 
