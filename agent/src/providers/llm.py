@@ -18,7 +18,6 @@ from urllib.parse import urlsplit
 from pydantic import PrivateAttr
 
 from src.config.accessor import get_env_config, reset_env_config
-from src.providers.endpoint_guard import build_public_only_clients, proxy_applies
 from src.providers.session_context import current_llm_session_id
 from src.providers.capabilities import (
     ProviderCapabilities,
@@ -1778,6 +1777,10 @@ def build_llm(*, model_name: Optional[str] = None, callbacks: Any = None) -> Any
         _validate_explicit_headers(headers, source=f"{caps.name} provider configuration")
         kwargs["default_headers"] = headers
     disable_proxy = get_env_config().llm.vibe_trading_disable_http_proxy
+    if provider == "custom":
+        # Imported here: the guard needs httpx/httpcore/anyio, and the
+        # background-tool lifecycle checks import this module without them.
+        from src.providers.endpoint_guard import build_public_only_clients, proxy_applies
     if provider == "custom" and (disable_proxy or not proxy_applies(creds["base_url"])):
         # A saved custom endpoint is re-checked on every connection, so a
         # host that re-resolves to a private address later is refused.

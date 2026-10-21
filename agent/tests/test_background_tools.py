@@ -14,6 +14,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from src.tools import background_tools
+from tests.module_os_helpers import patch_module_os
 from src.tools.background_tools import BackgroundManager
 
 
@@ -372,7 +373,7 @@ def test_timeout_stays_timeout_when_the_final_group_signal_is_refused(
         real_killpg(pid, sig)
 
     monkeypatch.setattr(background_tools, "_COMMAND_TIMEOUT_SECONDS", 0.5)
-    monkeypatch.setattr(background_tools.os, "killpg", killpg)
+    patch_module_os(monkeypatch, background_tools, killpg=killpg)
     manager = BackgroundManager()
     task = _execute(manager, "slow", f"{shlex.quote(sys.executable)} -c 'import time; time.sleep(5)'")
 
