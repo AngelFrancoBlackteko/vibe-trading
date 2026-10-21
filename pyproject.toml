@@ -110,6 +110,8 @@ include = ["src*", "backtest*", "cli*", "evals*"]
     "skills/**/*.json",
     "skills/**/*.py",
     "providers/*.json",
+    "tools/paper_trade/*.json",
+    "tools/paper_trade/*.md",
     "pixel_agents/*.json",
     "scheduled_research/playbooks/*.md",
     "swarm/presets/*.yaml",
@@ -292,6 +294,7 @@ pythonpath = ["agent"]
 markers = [
     "unit: Unit tests (fast, no network)",
     "integration: Integration tests (may need network)",
+    "slow: Paper-trade performance-budget gates; run at the delivery gate",
 ]
 
 [tool.ruff]
