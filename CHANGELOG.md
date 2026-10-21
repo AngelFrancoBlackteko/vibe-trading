@@ -5,6 +5,24 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A retried provider error no longer halts live model decisions for the
+  day**. 0.1.18 announced every failed stream, compaction call or cancelled
+  response that reported no usage as missing usage, which the live decision
+  budget treats as a reason to halt; a connection reset followed by a
+  successful retry stopped live decisions until the next UTC day. Such calls
+  are now counted as `unreported_calls` in `llm_usage.json`; an ordinary
+  response without usage still halts the runner as before.
+- **A research goal's final answer is delivered even when it crosses the
+  goal's token budget**. 0.1.18 discarded a finished text answer whose own
+  usage reached `token_budget` — the text had already streamed — and reported
+  the run as failed. The answer is now released and the run succeeds with the
+  budget reason; a tool call from a response past the budget is still not
+  executed, and the exhausted goal still refuses further spending. The
+  message says to end the goal, since a budget cannot be raised after the
+  goal is created.
+
 ## [0.1.18] — 2026-10-21
 
 ### Changed
@@ -20,7 +38,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   0.1.13, 0.1.15, 0.1.16 and 0.1.17 cycles in all seven READMEs, each PR
   attribution checked against GitHub. The data-tools list counts the 29
   read-only data tools the MCP server serves (it said 22). The 0.1.13 notes
-  above credit ModelScope (#1011) to @yrk111222 and #676 to the session
+  below credit ModelScope (#1011) to @yrk111222 and #676 to the session
   lifecycle entry it fixed.
 
 ### Fixed
