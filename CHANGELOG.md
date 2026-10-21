@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.18] — 2026-10-21
+
 ### Changed
 
 - Reduce agent request overhead with on-demand tool schemas while keeping the
@@ -14,7 +16,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Preserve oversized tool results in readable run artifacts and stop Swarm from
   clearing new observations before the model sees them. Context pressure uses
   the model window and includes tool schemas.
-
 - **README credits cover every cycle again**: contributor lines for the
   0.1.13, 0.1.15, 0.1.16 and 0.1.17 cycles in all seven READMEs, each PR
   attribution checked against GitHub. The data-tools list counts the 29
@@ -24,6 +25,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Keep the custom-endpoint guard lazy-loaded for minimal installations and align
+  the Windows desktop MCP lock with the updated package requirement.
 - Include compaction, cancelled responses and failed streams in usage accounting;
   stop further work when a research goal exhausts its token budget. Forward the
   configured output cap to both DeepSeek adapters.
