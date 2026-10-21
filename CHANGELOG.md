@@ -15,6 +15,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   clearing new observations before the model sees them. Context pressure uses
   the model window and includes tool schemas.
 
+- **README credits cover every cycle again**: contributor lines for the
+  0.1.13, 0.1.15, 0.1.16 and 0.1.17 cycles in all seven READMEs, each PR
+  attribution checked against GitHub. The data-tools list counts the 29
+  read-only data tools the MCP server serves (it said 22). The 0.1.13 notes
+  above credit ModelScope (#1011) to @yrk111222 and #676 to the session
+  lifecycle entry it fixed.
+
 ### Fixed
 
 - Include compaction, cancelled responses and failed streams in usage accounting;
@@ -23,6 +30,52 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Redact credentials before tool results reach model context or replay caches,
   and reject incomplete compatible-provider streams instead of releasing a
   truncated answer or tool call.
+- **`vibe-trading-mcp --transport http` reclaims its sessions**
+  (CVE-2026-59951 / GHSA-84m7-p3x7-pcfv). `mcp` is now `>=1.30.0` instead of
+  capped below 1.30: an idle session closes after 30 minutes, at most 10,000
+  exist and an ended session is dropped, so a client can no longer grow
+  server memory without bound. 0.1.15–0.1.17 held the cap because 1.30's
+  RFC 8414 issuer check refused IBKR's OAuth metadata; IBKR's
+  protected-resource document now names the same issuer as its metadata
+  (checked 2026-10-21) and Robinhood's already did. The Docker lock pins
+  `mcp` 1.30.0.
+- **Custom model endpoints are checked again on every connection**. Saving a
+  profile resolved its host once; a name that later re-resolved to a private
+  address (DNS rebinding), or a redirect to one, was not checked again. The
+  provider test and the running model now resolve each direct connection
+  once, refuse it unless every address is public and connect to the address
+  they checked (TLS still verifies the host name). When an environment proxy
+  carries the request the proxy resolves the name, so this check does not
+  apply there.
+- **Custom providers can be saved behind fake-IP proxies**. Clash, Surge and
+  sing-box in TUN mode answer every lookup from 198.18.0.0/15, which 0.1.17
+  refused, so no custom provider could be saved on such a host. A looked-up
+  198.18.x address is accepted now (the proxy resolves the real name); the
+  same address written into the URL is still refused.
+- **Grounding reads the run's own files under the names models use**. A
+  figures-block ref naming the active run as `run_dir/…` or by its directory
+  name (`20261021_…/artifacts/metrics.csv`) resolves to that run's
+  engine-written file, and a sign written before a currency mark
+  (`−$1,847.78`, `(−$5.00)`, `PnL: -$3.20`) is the number's sign in both prose
+  and declarations. A live DeepSeek backtest report had its final value,
+  trade count and losing trade's PnL cut for these two reasons. Model-written
+  files and paths outside the run still never resolve, and a hyphen joining
+  two figures (`$10-$20`) or a spaced one (`$10 - $20`) is not a sign.
+- **Correlation analysis puts bare Beijing, Shanghai-fund and B-share codes on
+  their exchange**. `920xxx` resolved to `.SZ`, as did Shanghai `5xxxxx`
+  funds and `9xxxxx` B shares; the rule now matches the Tushare fallback's
+  (4/8/920 → `.BJ`, 5/6/9 → `.SH`, otherwise `.SZ`).
+- **A timed-out background command is reported as a timeout on macOS**.
+  macOS answers EPERM rather than ESRCH when a process group holds only
+  exited, unreaped processes, so the final kill of a timed-out tree raised
+  and the task was marked `error` on a loaded host.
+- **Paper accounts say when nothing can be settled yet**. Advancing an
+  account before its first session closed reported a date range that ran
+  backwards ("between 2026-10-21 and 2026-10-20"); it now names the first
+  execution date and the settlement time in the market's time zone.
+- **The sdist carries what its tests need**: the test packages'
+  `__init__.py` files and CSV / JSON fixtures, and no untracked
+  `test_e2e_*.py` harness.
 
 ## [0.1.17] — 2026-10-21
 
@@ -4071,7 +4124,7 @@ Rolls up 408 commits / 162 merged pull requests since 0.1.12.
   instead of a pip upgrade that would silently replace the dev install.
 - **ModelScope** joins the built-in providers through its official
   OpenAI-compatible hosted-inference endpoint, default `Qwen/Qwen3.5-27B`
-  (#1011, thanks @honginp).
+  (#1011, thanks @yrk111222).
 - **Live model discovery** in Settings (#924, thanks @QCYTSN) — configured
   providers are queried on demand with stable warning codes and five-locale
   controls, and each reply records and reloads the immutable provider/model/
@@ -4136,10 +4189,10 @@ Rolls up 408 commits / 162 merged pull requests since 0.1.12.
   advisory; Electron transitive advisories were patched separately.
 - Daily price bands are judged **at execution time** — from a pre-fill base
   price against the prospective fill price — never from the decision bar's own
-  close (#676, thanks @tyj147454413-cmd).
+  close.
 - A session runs **one attempt at a time** (a second concurrent send is refused
   with HTTP 409), and a user stop is its own terminal state distinct from a
-  failure, both live and on reload.
+  failure, both live and on reload (#676, thanks @tyj147454413-cmd).
 - Trace redaction is now **sink-aware**: `content` is released only in the
   tool-RESULT sink and stays redacted in the fail-closed ARGUMENTS sink used by
   tool-call arguments and the live audit ledger (`env` is never released);
