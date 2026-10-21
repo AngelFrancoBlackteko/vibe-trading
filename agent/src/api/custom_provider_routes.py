@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from src.api.settings_routes import activate_custom_provider
 from src.providers.custom_profiles import CustomProviderStore, STORE_LOCK
+from src.providers.endpoint_guard import is_non_public_address, proxy_applies, public_only_async_client
 
 AuthDep = Callable[..., Awaitable[Any] | Any]
 _TEST_TTL_S = 300.0
@@ -43,26 +44,6 @@ class CustomProviderActivateRequest(BaseModel):
     confirm: bool = False
 
 
-def _is_non_public_address(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
-    """Return whether a provider endpoint address is outside the public internet.
-
-    ``is_private`` misses the shared address space 100.64.0.0/10, which holds
-    Alibaba Cloud's metadata service (100.100.100.200); ``is_global`` covers it
-    together with loopback, link-local, reserved and documentation ranges. An
-    IPv4-mapped IPv6 address is judged by the IPv4 address it carries.
-
-    Args:
-        address: The literal or resolved endpoint address.
-
-    Returns:
-        True when the address must not be used as a provider endpoint.
-    """
-    mapped = getattr(address, "ipv4_mapped", None)
-    if mapped is not None:
-        address = mapped
-    return not address.is_global or address.is_multicast
-
-
 def _validate_custom_base_url(value: str) -> str:
     normalized = value.strip().rstrip("/")
     parsed = urlsplit(normalized)
@@ -82,7 +63,7 @@ def _validate_custom_base_url(value: str) -> str:
         address = ipaddress.ip_address(hostname)
     except ValueError:
         address = None
-    if address is not None and _is_non_public_address(address):
+    if address is not None and is_non_public_address(address):
         raise ValueError("Provider base URL cannot target local or private network addresses")
     if normalized.endswith("/chat/completions"):
         normalized = normalized[:-len("/chat/completions")]
@@ -99,7 +80,7 @@ def _reject_private_dns_targets(base_url: str) -> None:
         raise ValueError("Provider hostname could not be resolved") from exc
     for result in results:
         address = ipaddress.ip_address(result[4][0])
-        if _is_non_public_address(address):
+        if is_non_public_address(address, resolved=True):
             raise ValueError("Provider hostname resolves to a local or private network address")
 
 
@@ -108,6 +89,20 @@ def _completion_url(base_url: str) -> str:
     if url.endswith("/chat/completions"):
         return url
     return f"{url}/chat/completions"
+
+
+def _provider_async_client(base_url: str) -> httpx.AsyncClient:
+    """Client for the provider test: every direct connection is re-checked.
+
+    The name is resolved again when the request connects, and only to public
+    addresses, so a host that re-resolves after the check above (DNS
+    rebinding) or redirects is still refused. Through a proxy the proxy
+    resolves the name, so the default client is used.
+    """
+    kwargs = {"timeout": _PROVIDER_REQUEST_TIMEOUT_S, "follow_redirects": False}
+    if proxy_applies(base_url):
+        return httpx.AsyncClient(**kwargs)
+    return public_only_async_client(**kwargs)
 
 
 async def _perform_completion_test(*, base_url: str, model: str, api_key: str) -> dict[str, Any]:
@@ -124,12 +119,14 @@ async def _perform_completion_test(*, base_url: str, model: str, api_key: str) -
         "temperature": 0,
     }
     try:
-        async with httpx.AsyncClient(timeout=_PROVIDER_REQUEST_TIMEOUT_S, follow_redirects=False) as client:
+        async with _provider_async_client(normalized_base_url) as client:
             response = await client.post(_completion_url(normalized_base_url), headers=headers, json=body)
             response.raise_for_status()
             payload = response.json()
     except httpx.HTTPStatusError as exc:
         raise ValueError(f"Provider returned HTTP {exc.response.status_code}") from exc
+    except httpx.ConnectError as exc:
+        raise ValueError(f"Provider test failed: {exc}") from exc
     except (httpx.HTTPError, ValueError) as exc:
         raise ValueError("Provider test failed: endpoint did not return valid JSON") from exc
     try:

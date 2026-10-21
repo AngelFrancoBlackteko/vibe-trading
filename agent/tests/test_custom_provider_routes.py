@@ -271,7 +271,7 @@ def test_real_completion_transport_redacts_key_and_sends_expected_request(monkey
         seen.append(request)
         return httpx.Response(200, json={"choices": [{"message": {"content": "OK synthetic-secret"}}]})
     monkeypatch.setattr(custom_provider_routes, "_reject_private_dns_targets", lambda _: None)
-    monkeypatch.setattr(custom_provider_routes.httpx, "AsyncClient", lambda **kw: actual_client(transport=httpx.MockTransport(handle), **kw))
+    monkeypatch.setattr(custom_provider_routes, "_provider_async_client", lambda _url: actual_client(transport=httpx.MockTransport(handle)))
     result = asyncio.run(custom_provider_routes._perform_completion_test(base_url="https://example.test/v1", model="demo", api_key="synthetic-secret"))
     assert result["response_preview"] == "OK [redacted]"
     assert str(seen[0].url) == "https://example.test/v1/chat/completions"
