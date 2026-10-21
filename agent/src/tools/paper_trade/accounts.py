@@ -199,7 +199,7 @@ class PaperAccounts:
         ):
             raise AccountConflict("Account changed; reload before advancing")
         now = self._now(account["market"])
-        _, hour, minute = _MARKET_TIME[account["market"]]
+        zone, hour, minute = _MARKET_TIME[account["market"]]
         latest = now.date() - timedelta(
             days=int((now.hour, now.minute) < (hour, minute))
         )
@@ -208,13 +208,18 @@ class PaperAccounts:
             earliest = (
                 datetime.fromisoformat(account["last_date"]).date() + timedelta(days=1)
             ).isoformat()
+        if earliest > latest.isoformat():
+            raise ValueError(
+                f"No completed session to settle yet. Execution dates start at {earliest}; "
+                f"a session can be settled from {hour:02d}:{minute:02d} {zone} time"
+            )
         if (
             not isinstance(to_date, str)
             or not earliest <= to_date <= latest.isoformat()
         ):
             raise ValueError(
                 f"Execution date must be between {earliest} and {latest.isoformat()}; "
-                "wait for a completed session after account creation"
+                "later dates wait for a completed session"
             )
         payload = {
             "account_id": account_id,

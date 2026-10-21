@@ -91,6 +91,18 @@ def test_no_backdating_future_or_incomplete_session(service):
     assert service.get(account["id"])["revision"] == 0
 
 
+def test_an_account_with_no_settled_session_says_so_instead_of_an_inverted_range(service):
+    account = create(service)
+    service.clock = lambda: datetime(2026, 10, 20, 20, 10, tzinfo=timezone.utc)
+    with pytest.raises(ValueError) as caught:
+        service.advance(account["id"], expected_revision=0, to_date="2026-10-20", orders=[])
+    message = str(caught.value)
+    assert "No completed session to settle yet" in message
+    assert "Execution dates start at 2026-10-20" in message
+    assert "16:30 America/New_York" in message
+    assert "between" not in message
+
+
 def test_next_session_start_uses_market_timezone_and_skips_weekend(service):
     service.clock = lambda: datetime(
         2026, 10, 24, 1, tzinfo=timezone.utc
