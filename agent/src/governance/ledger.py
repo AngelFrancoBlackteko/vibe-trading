@@ -642,15 +642,21 @@ def rotate_if_needed(
 
     Raises:
         ValueError: If ``max_bytes`` is not positive.
-        LedgerCorruptionError: If the active chain is broken -- a corrupt
-            ledger is sealed by nobody; fix or quarantine it deliberately.
+        LedgerCorruptionError: If the history is broken, sealed segments
+            included -- a corrupt ledger is sealed by nobody; fix or
+            quarantine it deliberately.
     """
     if max_bytes <= 0:
         raise ValueError(f"max_bytes must be positive, got {max_bytes}")
     if not path.exists() or path.stat().st_size < max_bytes:
         return None
 
-    result = verify_chain(path)
+    # The whole history, not just the active file: after an earlier rotation
+    # the active file legitimately starts mid-chain (its first record carries
+    # the sealed segment's seq+1 and prev_record_hash), so a single-file walk
+    # reads that healthy continuation as a seq_gap and would refuse every
+    # rotation after the first.
+    result = verify_chain_with_archives(path)
     if not result.ok:
         raise LedgerCorruptionError(result.first_break)
 
