@@ -6003,7 +6003,7 @@ _PROVIDER_CHOICES: list[dict[str, str | None]] = [
         "key_env": "MINIMAX_API_KEY",
         "base_env": "MINIMAX_BASE_URL",
         "base_url": "https://api.minimax.io/v1",
-        "model": "MiniMax-M3",
+        "model": "MiniMax-M3.1-Flash",
         "key_prefix": None,
         "key_placeholder": "api-key...",
     },
