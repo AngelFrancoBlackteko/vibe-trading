@@ -92,7 +92,7 @@ _PRICE_LIMIT: dict[str, float] = {
 
 _COMMISSION_PER_CONTRACT: dict[str, float] = {
     "ES": 2.25, "NQ": 2.25, "YM": 2.25, "RTY": 2.25,
-    "MES": 0.62, "MNQ": 0.62,
+    "MES": 0.62, "MNQ": 0.62, "MYM": 0.62, "M2K": 0.62,
     "CL": 2.25, "NG": 2.25,
     "GC": 2.25, "SI": 2.25, "HG": 2.25,
     "MGC": 0.62,
