@@ -365,31 +365,12 @@ async def _list_provider_models(
             warning_code="model_list_unavailable",
         )
 
-    # Curate only known gateway text namespaces at their official endpoints.
-    # Never invent availability: retain current routes only when discovery returned them.
-    gateway_choices = {
-        ("openrouter", "https://openrouter.ai/api/v1"): (
-            "minimax/minimax-", ["minimax/minimax-m3.1-flash:free", "minimax/minimax-m3"]
-        ),
-        ("opencode", "https://opencode.ai/zen/v1"): (
-            "minimax-", ["minimax-m3.1-flash-free", "minimax-m3"]
-        ),
-        ("opencode", "https://opencode.ai/zen/go/v1"): (
-            "minimax-", ["minimax-m3.1-flash-free", "minimax-m3"]
-        ),
-    }
-    if choices := gateway_choices.get((provider.name, base_url.rstrip("/"))):
-        prefix, current = choices
-        text_models = []
-        for model in models:
-            suffix = model.removeprefix(prefix).lower() if model.startswith(prefix) else ""
-            if suffix == "01" or (suffix.startswith("m") and suffix[1:2].isdigit()):
-                text_models.append(model)
-        if text_models:
-            first = models.index(text_models[0])
-            remaining = [model for model in models if model not in text_models]
-            remaining[first:first] = [model for model in current if model in models]
-            models = remaining
+    # Prefer configured recommendations without deleting discovered routes.
+    # Paid variants, legacy models and future releases remain selectable.
+    official_endpoints = {provider.default_base_url, *provider.base_url_options}
+    if base_url.rstrip("/") in official_endpoints:
+        preferred = [model for model in provider.model_options if model in models]
+        models = preferred + [model for model in models if model not in preferred]
 
     discovered = bool(models)
     if provider.default_model not in models:

@@ -19,6 +19,7 @@ from typing import Any, Dict, Mapping, TypeVar
 import pandas as pd
 
 from backtest.engines.china_a import _blocked_by_limit
+from backtest.engines._market_hooks import strip_local_prefix
 from backtest.engines.futures_base import FuturesBaseEngine
 
 logger = logging.getLogger(__name__)
@@ -160,7 +161,11 @@ def _extract_product(symbol: str) -> str:
     Returns:
         Product code (e.g. 'ES', 'CL', 'GC', '6E', 'M2K').
     """
-    code = symbol.split(".")[0].upper()
+    code = strip_local_prefix(symbol).split(".")[0].upper()
+    if code.endswith("=F"):
+        # Yahoo's explicit continuous-contract suffix already identifies the
+        # complete product, including digit-bearing names such as M2K/M6E.
+        return code[:-2]
 
     if code in _KNOWN_PRODUCTS:
         return code
@@ -170,18 +175,18 @@ def _extract_product(symbol: str) -> str:
         return listed
 
     # Pattern 1: product + month-code + year (ESZ4, CLF25, GCM2025, 6EZ4)
-    m = re.match(r"(\d[A-Z]|[A-Z]{2,4})([FGHJKMNQUVXZ])(\d{1,4})$", code)
+    m = re.match(r"([A-Z0-9]{1,5})([FGHJKMNQUVXZ])(\d{1,4})$", code)
     if m:
         return m.group(1)
 
     # Pattern 2: product + YYMM (NQ2503, CL2412, 6EH25)
-    m = re.match(r"(\d?[A-Z]+)(\d{4})$", code)
+    m = re.match(r"([A-Z0-9]{1,5})(\d{4})$", code)
     if m:
         return m.group(1)
 
     # Pattern 3: bare product or fallback
-    m = re.match(r"(\d?[A-Z]+)", code)
-    return m.group(1) if m else code
+    m = re.fullmatch(r"[A-Z0-9]{1,5}", code)
+    return m.group(0) if m else code
 
 
 class GlobalFuturesEngine(FuturesBaseEngine):

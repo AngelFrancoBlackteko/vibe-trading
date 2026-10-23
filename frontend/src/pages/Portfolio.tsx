@@ -565,6 +565,7 @@ function AccountCard({ account, active, displayCurrency, fx, onClick, onReconnec
       <>
         <div className="mt-4 text-2xl font-semibold">{money(accountDisplay, displayCurrency)}</div>
         <div className="mt-1 text-xs text-muted-foreground">{displayCurrency === "USD" ? money(account.total_cny, "CNY") : money(account.total_usd)} · {t("portfolio.accounts.positions", { count: account.position_count ?? 0 })}</div>
+        <AccountBalanceDetails balances={account.balance_details} />
         <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs"><span className="text-positive">{account.source_kind === "extraetf" ? t("portfolio.imports.source") : t("portfolio.accounts.fresh")}</span><span className="text-muted-foreground">{dateTime(account.import_metadata?.source_mtime ?? account.last_success_at)}</span></div>
       </>
     )}
@@ -572,6 +573,35 @@ function AccountCard({ account, active, displayCurrency, fx, onClick, onReconnec
     {failed && onReconnect ? <button onClick={(event) => { event.stopPropagation(); onReconnect(); }} disabled={actionsDisabled} className="mt-3 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs disabled:opacity-50">{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}{t("portfolio.accounts.reconnect")}</button> : null}
     {failed && onRetry ? <button onClick={(event) => { event.stopPropagation(); onRetry(); }} disabled={actionsDisabled} className="mt-3 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs disabled:opacity-50">{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}{t("portfolio.accounts.retryRead")}</button> : null}
   </div>;
+}
+
+function AccountBalanceDetails({ balances }: { balances: PortfolioAccount["balance_details"] }) {
+  const { t } = useTranslation();
+  const visible = balances?.filter((balance) => balance.cash_infos.length || balance.max_finance_amount != null || balance.remaining_finance_amount != null);
+  if (!visible?.length) return null;
+  const amount = (value: number | null, currency: string | null) => value == null ? "—" : currency ? money(value, currency) : value.toLocaleString();
+  return <details className="mt-4 border-t pt-3 text-xs" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+    <summary className="cursor-pointer font-medium">{t("portfolio.accounts.cashDetails")}</summary>
+    {visible.map((balance, index) => <div key={index} className="mt-3 space-y-3">
+      <div className="text-muted-foreground">{t("portfolio.accounts.reportingCurrency")}: {balance.currency ?? "—"}</div>
+      <dl className="grid grid-cols-2 gap-2">
+        <div><dt className="text-muted-foreground">{t("portfolio.accounts.financingLimit")}</dt><dd>{amount(balance.max_finance_amount, balance.currency)}</dd></div>
+        <div><dt className="text-muted-foreground">{t("portfolio.accounts.financingRemaining")}</dt><dd>{amount(balance.remaining_finance_amount, balance.currency)}</dd></div>
+      </dl>
+      {balance.cash_infos.map((cash, cashIndex) => <div key={cashIndex} className="rounded-lg bg-muted/50 p-3">
+        <div className="mb-2 font-medium">{cash.currency ?? "—"}</div>
+        <dl className="grid grid-cols-2 gap-2">
+          {([
+            ["cashAvailable", cash.available_cash], ["cashWithdrawable", cash.withdraw_cash],
+            ["cashFrozen", cash.frozen_cash], ["cashSettling", cash.settling_cash],
+          ] as const).map(([key, value]) => <div key={key}>
+            <dt className="text-muted-foreground">{t(`portfolio.accounts.${key}`)}</dt>
+            <dd className={value != null && value < 0 ? "text-danger" : ""}>{amount(value, cash.currency)}</dd>
+          </div>)}
+        </dl>
+      </div>)}
+    </div>)}
+  </details>;
 }
 
 function BrokerBadge({ broker }: { broker: string }) {

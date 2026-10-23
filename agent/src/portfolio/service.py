@@ -28,6 +28,7 @@ from src.portfolio.compatibility import (
 from src.portfolio.fx import FxQuote, Rates, build_rates, from_usd
 from src.portfolio.normalization import (
     STABLECOINS,
+    account_balance_details,
     account_cash_usd,
     account_total_usd,
     auth_metadata,
@@ -35,6 +36,7 @@ from src.portfolio.normalization import (
     value_position,
 )
 from src.portfolio.store import PortfolioStore
+from src.tools.redaction import redact_text
 from src.trading.connections import requires_account_selection
 from src.trading.profiles import profile_by_id
 from src.trading.types import TradingProfile
@@ -85,7 +87,8 @@ _AUTH_REQUIRED_MARKERS = (
 
 _REDACT_URL_QUERY = re.compile(r"(?i)(https?://[^\s?#]+)\?[^\s#]+")
 _REDACT_SECRET_PARAMETER = re.compile(
-    r"(?i)\b(signature|api[_-]?key|secret)=([^&\s]+)"
+    r"""(?i)(["']?\b(?:signature|api[_-]?key|secret)["']?\s*[:=]\s*)"""
+    r"""(?:\[redacted\]|"[^"]*"|'[^']*'|[^&\s,}\]]+)"""
 )
 
 
@@ -108,8 +111,9 @@ def _portfolio_error_details(
             "Confirm Binance is available for your region and that your account uses its supported API endpoint.",
         )
 
-    message = _REDACT_URL_QUERY.sub(r"\1?<query redacted>", message)
-    message = _REDACT_SECRET_PARAMETER.sub(r"\1=<redacted>", message)
+    message = redact_text(message)
+    message = _REDACT_URL_QUERY.sub(r"\1?<redacted-query>", message)
+    message = _REDACT_SECRET_PARAMETER.sub(r"\1<redacted>", message)
     return default_code, message[:300]
 
 
@@ -403,6 +407,7 @@ class PortfolioService:
                 priced_count = sum(
                     1 for row in broker_positions if row.get("priced")
                 )
+                balance_details = account_balance_details(broker, result["account"])
             except Exception as exc:
                 error_code, error = _portfolio_error_details(
                     exc,
@@ -442,6 +447,7 @@ class PortfolioService:
                     ),
                     "priced_value_usd": _number(priced_total),
                     "cash_usd": _number(cash_total),
+                    "balance_details": balance_details,
                     "unpriced_or_other_usd": _number(unpriced_or_other),
                     "position_count": len(broker_positions),
                     "priced_position_count": priced_count,
@@ -790,6 +796,7 @@ class PortfolioService:
                     "asset_provider_type": row["broker"],
                     "status": row["status"],
                     "total_usd": row.get("total_usd"),
+                    "balance_details": row.get("balance_details", []),
                     "source_kind": row.get("source_kind", "connection"),
                     "file_evidence": {
                         key: row["import_metadata"].get(key)

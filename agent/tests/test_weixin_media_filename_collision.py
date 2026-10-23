@@ -50,6 +50,28 @@ def _file_item(encrypt_query_param: str, full_url: str) -> dict:
 
 
 class TestFileDownloadFilenameCollision:
+    @pytest.mark.parametrize("same_url", [True, False])
+    def test_same_second_and_hash_collisions_preserve_both_files(
+        self, channel: WeixinChannel, monkeypatch: pytest.MonkeyPatch, same_url: bool
+    ) -> None:
+        monkeypatch.setattr(weixin_mod.time, "time", lambda: 1000)
+        monkeypatch.setattr(weixin_mod, "hash", lambda value: 7, raising=False)
+
+        async def run():
+            paths = []
+            for index, payload in enumerate((b"first", b"second")):
+                channel._client = _FakeClient(payload)
+                paths.append(await channel._download_media_item(
+                    _file_item("same" if same_url else str(index), "https://cdn/file"),
+                    "file", "report.pdf",
+                ))
+            return paths
+
+        paths = asyncio.run(run())
+        assert None not in paths
+        assert paths[0] != paths[1]
+        assert [Path(path).read_bytes() for path in paths] == [b"first", b"second"]
+
     def test_same_filename_from_two_messages_does_not_overwrite(
         self, channel: WeixinChannel
     ) -> None:

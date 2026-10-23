@@ -288,7 +288,9 @@ def test_gateway_picker_preserves_other_models_and_custom_endpoints(
     monkeypatch, provider_name, endpoint, prefix, flash, custom_endpoint
 ):
     m3, legacy, media = prefix + "m3", prefix + "m2.7", prefix + "music"
-    available = [m3, legacy, flash, "other/text-model", media]
+    paid_flash = prefix + "m3.1-flash"
+    future = prefix + "m4"
+    available = [m3, legacy, flash, paid_flash, future, "other/text-model", media]
     client_type = httpx.AsyncClient
     transport = httpx.MockTransport(
         lambda request: httpx.Response(
@@ -308,10 +310,11 @@ def test_gateway_picker_preserves_other_models_and_custom_endpoints(
         )
     )
     assert "other/text-model" in result.models and media in result.models
+    assert paid_flash in result.models and future in result.models
     if custom_endpoint:
         assert legacy in result.models
     else:
-        assert legacy not in result.models
+        assert legacy in result.models
         assert result.models.index(flash) < result.models.index(m3)
 
 
