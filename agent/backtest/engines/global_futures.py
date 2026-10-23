@@ -12,12 +12,18 @@ Market rules:
 
 from __future__ import annotations
 
+import logging
 import re
+from typing import Any, Dict, Mapping, TypeVar
 
 import pandas as pd
 
 from backtest.engines.china_a import _blocked_by_limit
 from backtest.engines.futures_base import FuturesBaseEngine
+
+logger = logging.getLogger(__name__)
+
+_T = TypeVar("_T")
 
 
 # ── Contract multiplier (USD per point / per unit) ──
@@ -46,6 +52,11 @@ _MULTIPLIER: dict[str, float] = {
     # Eurex
     "FESX": 10, "FDAX": 25, "FGBL": 1000,
 }
+
+#: Multiplier used when a product is absent from ``_MULTIPLIER``. It is ES's
+#: own value, so an unlisted contract is priced as though it were an E-mini
+#: future; the run records every such fallback under ``pricing_assumptions``.
+_DEFAULT_MULTIPLIER = 50
 
 # ── Margin per contract (approximate USD, initial margin) ──
 # Reference table — future use for margin-call checks. Not yet consumed.
@@ -179,12 +190,22 @@ class GlobalFuturesEngine(FuturesBaseEngine):
     Config keys:
       - slippage: default 0.0003
       - commission_per_contract: override, default varies by product
+
+    A product absent from the multiplier or commission table is not an error:
+    it is silently priced on a generic constant (50, ES's own multiplier, and
+    $2.50). The run reports every such fallback under ``pricing_assumptions``
+    so a default cannot pass for data (#1393's failure class).
     """
 
     def __init__(self, config: dict):
         # Leverage: most futures have 5-15% margin → 7-20x leverage.
         # Price is unknown at init, so use a reasonable fixed default.
         # User can override via config["leverage"].
+        # (product, field) -> the generic constant this run was priced on. A
+        # product missing from a table does not fail, it silently takes a
+        # default, so the run has to say which numbers were assumed rather
+        # than looked up. Recording only: this recorder changes no value.
+        self._pricing_defaults: dict[tuple[str, str], Any] = {}
         leverage = config.get("leverage", 10.0)
         config = {**config, "leverage": leverage}
         super().__init__(config)
@@ -192,6 +213,57 @@ class GlobalFuturesEngine(FuturesBaseEngine):
         self.base_price_fields = ("pre_settle", "pre_close")
         self.slippage_rate: float = config.get("slippage", 0.0003)
         self._comm_override = config.get("commission_per_contract")
+
+    def _priced(
+        self,
+        table: Mapping[str, _T],
+        product: str,
+        default: _T,
+        field: str,
+    ) -> _T:
+        """Look a product up, recording the miss when it falls back.
+
+        A product absent from one of the tables is priced on a generic
+        constant that looks exactly like data in the output -- for example an
+        unlisted contract is sized on ES's multiplier of 50. This returns the
+        same value the plain ``table.get(product, default)`` returned before
+        and additionally remembers the miss, so the run can state which of its
+        numbers were assumed.
+
+        Args:
+            table: One of the product tables in this module.
+            product: Product code as ``_extract_product`` spells it.
+            default: The generic constant used when the product is absent.
+            field: Name of the field, as reported in ``pricing_assumptions``.
+
+        Returns:
+            The table entry, or ``default`` when the product is not listed.
+        """
+        if product in table:
+            return table[product]
+        key = (product, field)
+        if key not in self._pricing_defaults:
+            self._pricing_defaults[key] = default
+            logger.warning(
+                "Global futures product %r has no %s entry; pricing it on the "
+                "generic default %r. The backtest reports this under "
+                "pricing_assumptions.",
+                product,
+                field,
+                default,
+            )
+        return default
+
+    def _engine_diagnostics(self) -> Dict[str, Any]:
+        """Report every table lookup this run priced on a generic default."""
+        if not self._pricing_defaults:
+            return {}
+        return {
+            "pricing_assumptions": [
+                {"product": product, "field": field, "value": value}
+                for (product, field), value in sorted(self._pricing_defaults.items())
+            ]
+        }
 
     def can_execute(self, symbol: str, direction: int, bar: pd.Series) -> bool:
         """Global futures: T+0, both directions, limit checks for equity index.
@@ -251,7 +323,9 @@ class GlobalFuturesEngine(FuturesBaseEngine):
             Commission in USD.
         """
         product = _extract_product(symbol)
-        rate = _COMMISSION_PER_CONTRACT.get(product, _DEFAULT_COMMISSION)
+        rate = self._priced(
+            _COMMISSION_PER_CONTRACT, product, _DEFAULT_COMMISSION, "commission"
+        )
         return size * rate
 
     def apply_slippage(self, price: float, direction: int) -> float:
@@ -261,7 +335,11 @@ class GlobalFuturesEngine(FuturesBaseEngine):
     def get_contract_multiplier(self, symbol: str) -> float:
         """Product-specific contract multiplier."""
         product = _extract_product(symbol)
-        return float(_MULTIPLIER.get(product, 50))
+        return float(
+            self._priced(
+                _MULTIPLIER, product, _DEFAULT_MULTIPLIER, "contract_multiplier"
+            )
+        )
 
 
 # ── Helpers ──
