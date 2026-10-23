@@ -87,5 +87,3 @@ def _cross_market_closes(n: int = 365) -> pd.DataFrame:
     aapl = pd.Series(100 * np.cumprod(1 + rng.normal(0, 0.015, n)), index=idx)
     aapl[~aapl.index.dayofweek.isin([0, 1, 2, 3, 4])] = np.nan
     return pd.DataFrame({"BTC-USDT": btc, "AAPL": aapl})
-
-
