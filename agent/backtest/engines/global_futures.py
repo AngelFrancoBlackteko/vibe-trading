@@ -40,13 +40,13 @@ _MULTIPLIER: dict[str, float] = {
     # Micro metals
     "MGC": 10, "SIL": 1000,
     # Grains (CBOT)
-    "ZC": 50, "ZS": 50, "ZW": 50, "ZM": 100, "ZL": 600,
+    "ZC": 50, "ZS": 50, "ZW": 50, "ZM": 100, "ZL": 600, "ZR": 2000,
     # Bonds (CBOT)
     "ZB": 1000, "ZN": 1000, "ZF": 1000, "ZT": 2000,
     # Currencies (CME)
     "6E": 125000, "6J": 12500000, "6B": 62500, "6A": 100000, "6C": 100000,
     # Softs (ICE)
-    "KC": 375, "SB": 1120, "CC": 10, "CT": 500,
+    "KC": 375, "SB": 1120, "CC": 10, "CT": 500, "OJ": 150,
     # Livestock (CME)
     "LE": 400, "HE": 400, "GF": 500,
     # Eurex
