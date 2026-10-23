@@ -914,12 +914,20 @@ class WeixinChannel(BaseChannel):
 
             media_dir = get_media_dir("weixin")
             ext = _ext_for_type(media_type)
-            if not filename:
-                ts = int(time.time())
-                hash_seed = encrypt_query_param or full_url
-                h = abs(hash(hash_seed)) % 100000
-                filename = f"{media_type}_{ts}_{h}{ext}"
-            safe_name = os.path.basename(filename)
+            # Always make the on-disk name unique, even when the sender
+            # supplied a filename (ITEM_FILE): two different messages can
+            # share the same original filename (e.g. repeated "report.pdf"),
+            # and without a unique stem the second download silently
+            # overwrites the first on disk, corrupting any earlier
+            # conversation turn that already referenced that path.
+            ts = int(time.time())
+            hash_seed = encrypt_query_param or full_url
+            h = abs(hash(hash_seed)) % 100000
+            if filename:
+                stem, orig_ext = os.path.splitext(os.path.basename(filename))
+                safe_name = f"{stem}_{ts}_{h}{orig_ext or ext}"
+            else:
+                safe_name = f"{media_type}_{ts}_{h}{ext}"
             file_path = media_dir / safe_name
             file_path.write_bytes(data)
             return str(file_path)
