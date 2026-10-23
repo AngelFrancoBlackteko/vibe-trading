@@ -146,6 +146,10 @@ def _to_plain_number(text: str, decimal_separator: str | None) -> str:
     Returns:
         The same number using ``.`` as the decimal separator and no grouping.
 
+    A separator that appears twice or more is always digit grouping: a number
+    carries at most one decimal separator, so ``"1,234,567"`` and
+    ``"1.234.567"`` are both 1234567 whichever locale wrote them.
+
     Raises:
         ValueError: If the value uses a single comma whose role cannot be
             determined -- ``"1,234"`` is 1234 in a US export and 1.234 in a
@@ -165,6 +169,8 @@ def _to_plain_number(text: str, decimal_separator: str | None) -> str:
         if text.rindex(".") > text.rindex(","):
             return text.replace(",", "")
         return text.replace(".", "").replace(",", ".")
+    if has_dot and text.count(".") > 1:
+        return text.replace(".", "")  # 1.234.567 cannot be a decimal point
     if has_comma:
         if text.count(",") > 1:
             return text.replace(",", "")  # 1,234,567 cannot be a decimal comma
