@@ -548,6 +548,9 @@ function AccountCard({ account, active, displayCurrency, fx, onClick, onReconnec
   const { t } = useTranslation();
   const failed = account.status === "error";
   const accountDisplay = displayValue(account.total_usd, account.total_cny, displayCurrency, fx);
+  const accountError = account.error_code === "binance_restricted_location"
+    ? t("portfolio.accounts.binanceRestrictedLocation")
+    : account.error;
   return <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") onClick(); }} className={`cursor-pointer rounded-xl border bg-card p-5 transition ${active ? "border-primary ring-1 ring-primary/20" : "hover:border-primary/40"}`}>
     <div className="flex items-center justify-between gap-3">
       <div><div className="font-medium">{account.label ?? account.broker.toUpperCase()}</div><div className="mt-1 flex flex-wrap items-center gap-2 text-xs"><BrokerBadge broker={account.broker} /><PortfolioCompatibilityBadge compatibility={account.portfolio_compatibility} /></div></div>
@@ -565,7 +568,7 @@ function AccountCard({ account, active, displayCurrency, fx, onClick, onReconnec
         <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs"><span className="text-positive">{account.source_kind === "extraetf" ? t("portfolio.imports.source") : t("portfolio.accounts.fresh")}</span><span className="text-muted-foreground">{dateTime(account.import_metadata?.source_mtime ?? account.last_success_at)}</span></div>
       </>
     )}
-    {failed && account.error ? <p className="mt-3 line-clamp-2 text-xs text-muted-foreground" title={account.error}>{account.error}</p> : null}
+    {failed && accountError ? <p className="mt-3 line-clamp-2 text-xs text-muted-foreground" title={accountError}>{accountError}</p> : null}
     {failed && onReconnect ? <button onClick={(event) => { event.stopPropagation(); onReconnect(); }} disabled={actionsDisabled} className="mt-3 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs disabled:opacity-50">{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}{t("portfolio.accounts.reconnect")}</button> : null}
     {failed && onRetry ? <button onClick={(event) => { event.stopPropagation(); onRetry(); }} disabled={actionsDisabled} className="mt-3 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs disabled:opacity-50">{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}{t("portfolio.accounts.retryRead")}</button> : null}
   </div>;

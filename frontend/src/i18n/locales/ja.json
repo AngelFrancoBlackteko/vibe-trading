@@ -2206,6 +2206,7 @@
       "failed": "読み取れませんでした — 合計に含まれていません",
       "lastSuccess": "最後に読み取れたのは {{time}}",
       "noSuccess": "まだ一度も読み取れていません",
+      "binanceRestrictedLocation": "Binance が読み取りを拒否しました（HTTP 451）。現在のネットワーク所在地は利用制限の対象です。お住まいの地域で Binance が利用可能か確認し、サポート対象の公式 API エンドポイントを使用してください。",
       "reconnect": "再接続",
       "retryRead": "再読み込み"
     },

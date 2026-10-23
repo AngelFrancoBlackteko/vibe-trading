@@ -2206,6 +2206,7 @@
       "failed": "읽지 못했습니다 — 합계에 포함되지 않음",
       "lastSuccess": "마지막으로 성공한 읽기 {{time}}",
       "noSuccess": "아직 성공한 읽기가 없습니다",
+      "binanceRestrictedLocation": "Binance가 이 읽기를 차단했습니다(HTTP 451). 현재 네트워크 위치가 제한되어 있습니다. 해당 지역에서 Binance를 사용할 수 있는지 확인하고 지원되는 공식 API 엔드포인트를 사용하세요.",
       "reconnect": "다시 연결",
       "retryRead": "다시 읽기"
     },

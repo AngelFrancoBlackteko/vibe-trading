@@ -2206,6 +2206,7 @@
       "failed": "Konnte nicht gelesen werden — nicht in der Summe enthalten",
       "lastSuccess": "Letzter erfolgreicher Abruf {{time}}",
       "noSuccess": "Noch kein erfolgreicher Abruf",
+      "binanceRestrictedLocation": "Binance hat diesen Abruf (HTTP 451) blockiert: Der aktuelle Netzwerkstandort ist eingeschränkt. Prüfe, ob Binance in deiner Region verfügbar ist, und verwende den unterstützten API-Endpunkt.",
       "reconnect": "Neu verbinden",
       "retryRead": "Lesen wiederholen"
     },
