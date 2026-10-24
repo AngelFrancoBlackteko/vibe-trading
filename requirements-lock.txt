@@ -953,9 +953,9 @@ cycler==0.12.1 \
     --hash=sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30 \
     --hash=sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c
     # via matplotlib
-cyclopts==4.23.3 \
-    --hash=sha256:4299ec47f5be853f9a114fcc534c84d42bbf19fefa303994597ecb7e5fd3082b \
-    --hash=sha256:b3a65872942afb08f3ab5ca3d65b0b3ecfc872c9ccbea9d6a74ec11aa8a0215e
+cyclopts==5.2.0 \
+    --hash=sha256:5da2a5d65164e03008621fc4795946b88a722b881398b5dfa58afa6218342cff \
+    --hash=sha256:b63c1b1beaadf3ead19214385a0f90b990f152c4107c174e1724c45dc71e9541
     # via fastmcp-slim
 ddgs==9.16.0 \
     --hash=sha256:161ca8e78ea08d40cd3f83fb12279b49322ffb342d981368bfa39bed9847d874 \
