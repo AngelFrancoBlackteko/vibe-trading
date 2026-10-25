@@ -43,7 +43,7 @@ __alpha_meta__ = {
     "frequency": ["1d"],
     "decay_horizon": 15,
     "min_warmup_bars": 16,
-    "notes": 'rank(vwap - 15d max(vwap)) is non-positive; we use signed_power for safety.',
+    "notes": 'The base is a percentile rank in (0, 1], so a negative 5-day close change is a real power, not a complex one.',
 }
 
 def compute(panel: dict) -> pd.DataFrame:
@@ -52,9 +52,11 @@ def compute(panel: dict) -> pd.DataFrame:
     vw = vwap(panel, "equity_cn")
     base = rank(vw - ts_max(vw, 15))
     expo = delta(c, 5)
-    # Combine via signed_power(base, mean_exp): use elementwise sign-preserving |base|**expo proxy
-    out_arr = np.sign(base.to_numpy(dtype=float, na_value=np.nan)) * np.power(
-        np.abs(base.to_numpy(dtype=float, na_value=np.nan)),
-        np.abs(expo.to_numpy(dtype=float, na_value=np.nan)),
+    # rank() is a percentile in (0, 1], so the report's power is real even when
+    # the 5-day close change is negative. Dropping the sign of that change
+    # turned 0.5 ** -2 into 0.25 instead of 4.
+    out_arr = np.power(
+        base.to_numpy(dtype=float, na_value=np.nan),
+        expo.to_numpy(dtype=float, na_value=np.nan),
     )
     return pd.DataFrame(out_arr, index=c.index, columns=c.columns)
