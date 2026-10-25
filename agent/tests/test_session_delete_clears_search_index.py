@@ -150,3 +150,19 @@ def test_active_run_cannot_recreate_deleted_content(owned_delete_index):
     finally:
         service._release_session(doomed.session_id)
     assert service.delete_session(doomed.session_id) is True
+
+
+def test_http_delete_reports_conflict_for_an_active_run(owned_delete_index, monkeypatch):
+    from fastapi.testclient import TestClient
+    import api_server
+
+    service, _, doomed, _ = owned_delete_index
+    monkeypatch.setattr(api_server, "_session_service", service)
+    service._reserve_session(doomed.session_id)
+    try:
+        client = TestClient(api_server.app, client=("127.0.0.1", 50000))
+        response = client.delete(f"/sessions/{doomed.session_id}")
+        assert response.status_code == 409
+        assert service.store.get_session(doomed.session_id) is not None
+    finally:
+        service._release_session(doomed.session_id)
