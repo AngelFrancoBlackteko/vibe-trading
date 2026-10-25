@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 
 import pytest
 from src.session.events import EventBus
 from src.session.models import Message
 from src.session.search import SessionSearchIndex
-from src.session.service import SessionService
+from src.session.service import SessionBusyError, SessionService
 from src.session.store import SessionStore
 from src.tools.session_search_tool import SessionSearchTool
 
@@ -97,10 +98,10 @@ def test_delete_leaves_an_unrelated_session_fully_indexed(owned_delete_index):
     )
 
 
-def test_delete_succeeds_when_the_search_index_is_unavailable(
+def test_delete_keeps_the_session_for_retry_when_search_is_unavailable(
     owned_delete_index, monkeypatch
 ):
-    """An index failure must not turn a successful on-disk delete into a failure."""
+    """A failed purge must not claim that the private text was deleted."""
     service, index, doomed, _sibling = owned_delete_index
 
     def _boom(session_id: str) -> None:
@@ -108,5 +109,44 @@ def test_delete_succeeds_when_the_search_index_is_unavailable(
 
     monkeypatch.setattr(index, "remove_session", _boom, raising=False)
 
+    with pytest.raises(RuntimeError, match="index offline"):
+        service.delete_session(doomed.session_id)
+    assert service.store.get_session(doomed.session_id) is not None
+
+
+def test_purge_transaction_rolls_back_and_a_retry_succeeds(owned_delete_index):
+    service, index, doomed, _ = owned_delete_index
+    conn = index._get_conn()
+    conn.execute("CREATE TRIGGER block_delete BEFORE DELETE ON sessions "
+                 "BEGIN SELECT RAISE(ABORT, 'purge failed'); END")
+    conn.commit()
+    with pytest.raises(sqlite3.IntegrityError, match="purge failed"):
+        service.delete_session(doomed.session_id)
+    assert service.store.get_session(doomed.session_id) is not None
+    assert _index_rows(index, doomed.session_id) == (1, 1)
+    assert _fts_hits(index, DELETED_TERM) == 1
+    conn.execute("DROP TRIGGER block_delete")
+    conn.commit()
     assert service.delete_session(doomed.session_id) is True
-    assert service.store.get_session(doomed.session_id) is None
+    assert _fts_hits(index, DELETED_TERM) == 0
+
+
+def test_missing_directory_still_clears_orphaned_index_rows(owned_delete_index):
+    service, index, doomed, _ = owned_delete_index
+    service.store.delete_session(doomed.session_id)
+    assert service.delete_session(doomed.session_id) is False
+    assert _index_rows(index, doomed.session_id) == (0, 0)
+    assert _fts_hits(index, DELETED_TERM) == 0
+
+
+def test_active_run_cannot_recreate_deleted_content(owned_delete_index):
+    service, index, doomed, _ = owned_delete_index
+    service._reserve_session(doomed.session_id)
+    try:
+        with pytest.raises(SessionBusyError):
+            service.delete_session(doomed.session_id)
+        assert service.store.get_session(doomed.session_id) is not None
+        assert _fts_hits(index, DELETED_TERM) == 1
+    finally:
+        service._release_session(doomed.session_id)
+    assert service.delete_session(doomed.session_id) is True
