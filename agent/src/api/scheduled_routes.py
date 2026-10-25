@@ -121,7 +121,7 @@ async def _send_scheduled_briefing(
 
     Args:
         channel: Channel id as configured in the channel runtime.
-        target: Address within that channel, or ``None`` for its default.
+        target: Explicit destination within that channel; missing targets fail.
         text: The briefing to deliver.
         delivery_format: Optional presentation hint for channels that support it.
         protect_pdf: Whether the generated PDF must be password protected.
