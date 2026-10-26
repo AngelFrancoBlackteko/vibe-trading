@@ -82,6 +82,7 @@ from src.market_data import (
     detect_source,
     get_loader,
 )
+from src.factors.research_contract import RESEARCH_STAGES
 
 mcp = FastMCP("Vibe-Trading", version=APP_VERSION)
 
@@ -962,6 +963,7 @@ def alpha_bench(
     top: int = 20,
     horizon: int = 1,
     output_dir: str | None = None,
+    research_stage: str = "single_factor_evaluation",
 ) -> str:
     """Benchmark one Alpha Zoo alpha or a complete zoo on a universe.
 
@@ -976,6 +978,7 @@ def alpha_bench(
             non-overlapping (end-anchored); 21 ≈ monthly, the conventional
             horizon for fundamental factors. Range 1-252.
         output_dir: Optional directory for the generated HTML report.
+        research_stage: Stage recorded in the factor-research contract.
     """
     if not alpha_id and not zoo:
         return json.dumps(
@@ -1035,6 +1038,15 @@ def alpha_bench(
             ensure_ascii=False,
         )
 
+    if research_stage not in RESEARCH_STAGES:
+        return json.dumps(
+            {
+                "status": "error",
+                "error": "MCP alpha_bench research_stage is not supported",
+            },
+            ensure_ascii=False,
+        )
+
     params: dict[str, Any] = {
         "universe": universe,
         "period": period,
@@ -1045,6 +1057,10 @@ def alpha_bench(
         params["alpha_id"] = alpha_id
     if zoo is not None:
         params["zoo"] = zoo
+    # Keep the legacy wire payload byte-for-byte stable when callers use the
+    # default stage; newer clients can opt into the additive research contract.
+    if research_stage != "single_factor_evaluation":
+        params["research_stage"] = research_stage
 
     if output_dir:
         from src.config.paths import get_runtime_root

@@ -1537,6 +1537,22 @@ when the bench applies its protective one-bar lag; consumers must not treat
 them as PIT-safe. New markets can register an adapter without changing this
 wire shape.
 
+Bench results also carry `meta.research`, the versioned factor-research run
+contract (`factor-research.run/v1`). It records the declared research stage,
+factor IDs, input lineage, transformations and evaluation settings so a result
+can be traced from Alpha Zoo inputs through later research steps. The CLI can
+label a run with `--research-stage`, for example:
+
+```bash
+vibe-trading alpha bench --zoo gtja191 --universe csi300 --period 2018-2025 \
+  --research-stage factor_screening
+```
+
+The v1 contract is additive provenance metadata. Its `explore`, `strict` and
+`locked` values describe research intent; they do not by themselves reject
+unknown data or enforce a locked test set. Those checks remain separate from
+the existing availability contract until a future policy layer enables them.
+
 **Browse the catalogue** and inspect a single alpha:
 ```bash
 vibe-trading alpha list --zoo gtja191 --theme reversal --limit 10
