@@ -1528,6 +1528,15 @@ incompatible with `position_adjustment="hold"`.
 vibe-trading alpha bench --zoo gtja191 --universe csi300 --period 2018-2025 --top 20
 ```
 
+Bench results also carry `meta.data_availability`, a field-level contract for
+the loaded inputs. It records the market adapter, venue, currency, calendar,
+observed window, serving source, validation coverage, and an explicit status:
+`verified`, `assumed`, `unknown`, or `failed`. Date-only fundamental filings
+remain `unknown` when the source does not expose a publication timestamp, even
+when the bench applies its protective one-bar lag; consumers must not treat
+them as PIT-safe. New markets can register an adapter without changing this
+wire shape.
+
 **Browse the catalogue** and inspect a single alpha:
 ```bash
 vibe-trading alpha list --zoo gtja191 --theme reversal --limit 10
