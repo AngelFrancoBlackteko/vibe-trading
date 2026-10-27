@@ -506,6 +506,15 @@ vibe-trading connector install /tmp/my-broker
 | **Validate** | 在适用时加入指标、benchmark comparison、Monte Carlo、Bootstrap、Walk-Forward、run cards 和 warnings。 |
 | **Deliver** | 返回报告、artifacts、tool traces，以及面向 TradingView、TDX、MetaTrader 5、MCP clients 或后续 sessions 的导出。 |
 
+### 版本化研究资料
+
+已完成的分析可以保存为不可变修订，记录研究主题、范围、数据截至日期、证据引用、验证状态，以及可选的 hypothesis、goal、session 或 run 关联。重复提交相同内容和来源信息会返回已有修订；证据变化或新的数据截至日期会追加关联修订，而不是覆盖旧结论。搜索只返回每个系列的最新版，完整历史则可在 Web 研究资料库、API、agent tools 和 CLI 中读取。历史内容不会被展示成刚刚重新验证过。
+
+```bash
+vibe-trading research-artifact save --subject "NVDA 基本面分析" --content "有证据支持的结论。" --data-as-of 2026-10-27 --evidence '[{"source_uri":"https://example.com/filing"}]'
+vibe-trading research-artifact search --query "NVDA"
+```
+
 ---
 
 ## 📡 数据源与智能 Fallback
@@ -1758,7 +1767,7 @@ Vibe-Trading/
 │   │   ├── memory/                 # 跨 session 持久记忆
 │   │   │   └── persistent.py       #   基于文件的记忆（~/.vibe-trading/memory/）
 │   │   │
-│   │   ├── tools/                  # 113 个自动发现的 agent 工具
+│   │   ├── tools/                  # 116 个自动发现的 agent 工具
 │   │   │   ├── backtest_tool.py    #   运行回测
 │   │   │   ├── remember_tool.py    #   跨 session 记忆（save/recall/forget）
 │   │   │   ├── skill_writer_tool.py #  skill CRUD（save/patch/delete/file）
