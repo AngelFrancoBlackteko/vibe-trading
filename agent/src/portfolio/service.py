@@ -1080,6 +1080,10 @@ class PortfolioService:
                         exchange=normalized.get("exchange") or "SMART",
                         currency=normalized["currency"],
                         sec_type="STK",
+                        # Same rule as the reads above: a dashboard refresh
+                        # must never open a browser (reconnect_source() is the
+                        # one explicit interactive path).
+                        interactive_oauth=False,
                         **(
                             {"connection_id": connection.id}
                             if profile.transport == "local_plugin"
@@ -1090,6 +1094,11 @@ class PortfolioService:
                     price = _quote_price(quote)
                     normalized["market_price"] = _number(price) if price else None
                     normalized["price_currency"] = normalized["currency"]
+                    if isinstance(quote, dict) and quote.get("mapping_error"):
+                        # The broker answered but the reply did not match its
+                        # mapped shape: the row stays unpriced with the reason
+                        # on it, never silently.
+                        normalized["price_error"] = str(quote["mapping_error"])[:160]
             except Exception as exc:
                 normalized["price_error"] = str(exc)[:160]
             rows.append(normalized)
