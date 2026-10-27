@@ -562,6 +562,21 @@ vibe-trading connector setup okx-live-sdk-readonly \
 
 The CLI prompts in the local terminal, stores values under that connection id in the OS keyring, and runs the connector's read-only check. The equivalent Web flow is **Portfolio → Manage accounts → Open connection center → choose a template → save to keyring → test connection**. MCP read tools may use `connection_id`; the process resolves its credentials from the vault, so keys never travel through MCP. Existing `~/.vibe-trading/<connector>.json` and environment configurations remain a compatibility fallback until a connection has a complete vault credential set.
 
+For local IBKR and Futu connections, edit **Host / Port** in that connection's
+card, then click **Test** to save the address and check it. The CLI equivalent
+uses the same saved endpoint:
+
+```bash
+vibe-trading connector setup ibkr-paper-local --connection-id my-gateway --host 127.0.0.1 --port 4002 --skip-check
+```
+
+The address is scoped to that connection and is also used by agent reads with
+its `connection_id`.
+
+Robinhood equity valuations show the quote's as-of time and use the more recent
+regular-hours or extended-hours trade. A mismatched symbol, an untraded listing,
+or an inactive listing cannot silently become a priced position.
+
 Do not paste broker API keys into an AI chat. Let the AI choose the connector, install the declared dependency, and interpret diagnostics; enter secrets only in the local hidden terminal prompt or local connection form.
 
 Read-only connectors you install yourself stay outside the checkout, in `~/.vibe-trading/connectors/<name>/`: a `connector.json` manifest plus an `adapter.py` implementing `check_status` / `get_account_snapshot` / `get_positions`. A manifest declaring any write capability is rejected.

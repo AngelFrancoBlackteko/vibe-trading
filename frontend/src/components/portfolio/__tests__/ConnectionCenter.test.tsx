@@ -159,6 +159,17 @@ describe("ConnectionCenter IBKR address", () => {
     mocked.checkConnection.mockResolvedValue({ status: "ok", report: { status: "ok" } });
   });
 
+  it("localizes gateway field labels", async () => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      renderCenter(ibkr());
+      expect(await screen.findByLabelText("主机")).toHaveValue("127.0.0.1");
+      expect(screen.getByLabelText("端口")).toHaveValue("7497");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
   it("saves the edited address before testing, without a separate save button", async () => {
     const connection = ibkr();
     const onChanged = renderCenter(connection);

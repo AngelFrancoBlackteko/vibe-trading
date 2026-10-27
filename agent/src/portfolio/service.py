@@ -1094,6 +1094,13 @@ class PortfolioService:
                     price = _quote_price(quote)
                     normalized["market_price"] = _number(price) if price else None
                     normalized["price_currency"] = normalized["currency"]
+                    quote_view = quote.get("quote") or {}
+                    if broker == "robinhood":
+                        if quote_view.get("price_as_of"):
+                            normalized["price_as_of"] = quote_view["price_as_of"]
+                            normalized["pricing_basis"] = f"Robinhood quote as of {quote_view['price_as_of']}"
+                        if quote_view.get("price_error"):
+                            normalized["price_error"] = str(quote_view["price_error"])[:160]
                     if isinstance(quote, dict) and quote.get("mapping_error"):
                         # The broker answered but the reply did not match its
                         # mapped shape: the row stays unpriced with the reason

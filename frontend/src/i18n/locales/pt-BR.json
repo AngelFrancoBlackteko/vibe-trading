@@ -2333,7 +2333,9 @@
       "accountDefault": " · padrão da corretora",
       "accountDeactivated": " · desativada",
       "accountSave": "Usar esta conta",
-      "accountSaved": "Conta salva."
+      "accountSaved": "Conta salva.",
+      "host": "Servidor",
+      "port": "Porta"
     },
     "imports": {
       "title": "Importar extraETF Investments",
@@ -2358,7 +2360,8 @@
       "current": "Valor atual",
       "targetValue": "Valor-alvo",
       "change": "Alteração de valor"
-    }
+    },
+    "quoteAsOf": "Cotação em {{time}}"
   },
   "analysis": {
     "updated": "Atualizado",

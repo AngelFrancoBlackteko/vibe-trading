@@ -148,6 +148,7 @@ export interface PortfolioPosition {
   priced: boolean;
   updated_at: string;
   pricing_basis?: string;
+  price_as_of?: string;
   price_error?: string;
 }
 

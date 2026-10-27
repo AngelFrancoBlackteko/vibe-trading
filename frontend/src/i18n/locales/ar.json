@@ -2333,7 +2333,9 @@
       "accountDefault": " · الافتراضي لدى الوسيط",
       "accountDeactivated": " · معطّل",
       "accountSave": "استخدام هذا الحساب",
-      "accountSaved": "تم حفظ الحساب."
+      "accountSaved": "تم حفظ الحساب.",
+      "host": "المضيف",
+      "port": "المنفذ"
     },
     "imports": {
       "title": "استيراد extraETF Investments",
@@ -2358,7 +2360,8 @@
       "current": "القيمة الحالية",
       "targetValue": "القيمة المستهدفة",
       "change": "تغير القيمة"
-    }
+    },
+    "quoteAsOf": "السعر حتى {{time}}"
   },
   "analysis": {
     "updated": "تم التحديث",

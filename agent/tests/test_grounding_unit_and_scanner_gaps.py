@@ -259,3 +259,11 @@ def test_plain_ref_fields_keep_the_fraction_reading(tmp_path: Path) -> None:
     )
 
     assert points.valid is False
+
+
+@pytest.mark.parametrize("nested", [{"value_end": 20.0}, [{"value_end": 20.0}]])
+def test_currency_does_not_cross_into_nested_objects(tmp_path, nested):
+    ledger = _ledger(tmp_path, {"data": {"currency": "USD", "value_end": 10.0, "child": nested}})
+    currencies = {record.field: record.currency for record in ledger._evidence}
+    assert currencies.pop("data.value_end") == "USD"
+    assert set(currencies.values()) == {None}

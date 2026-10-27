@@ -259,6 +259,8 @@ def test_quote_summary_maps_the_reply_onto_the_shared_quote_reader_names() -> No
         "ask": "151",
         "has_traded": True,
         "state": "active",
+        "price_as_of": "2026-10-12T15:59:00Z",
+        "price_error": None,
     }
 
 
@@ -498,3 +500,24 @@ def test_the_robinhood_live_profile_discloses_options_order_limit() -> None:
     profile = service.live_runner_profile_for_broker("robinhood")
 
     assert "options order placement is not supported" in profile.notes.lower()
+
+
+@pytest.mark.parametrize("stamp", [None, "invalid", "2026-10-12T21:00:00"])
+def test_extended_trade_without_a_timezone_cannot_be_selected(stamp):
+    quote = rh.quote("AAPL")
+    quote.update(last_non_reg_trade_price="120", venue_last_non_reg_trade_time=stamp)
+    result = mcp.normalize_result("quote", rh.quotes([rh.quote_result(quote)]))
+    assert "timestamp with timezone" in result["mapping_error"]
+    assert "quote" not in result
+
+
+def test_trade_selection_compares_instants_instead_of_timestamp_strings():
+    quote = rh.quote("AAPL", last_trade_price="110")
+    quote.update(
+        venue_last_trade_time="2026-10-12T15:00:00-04:00",
+        last_non_reg_trade_price="100",
+        venue_last_non_reg_trade_time="2026-10-12T18:00:00Z",
+    )
+    result = mcp.quote_summary(rh.quotes([rh.quote_result(quote)]))
+    assert result["last"] == "110"
+    assert result["price_as_of"] == "2026-10-12T15:00:00-04:00"

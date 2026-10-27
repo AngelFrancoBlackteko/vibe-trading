@@ -2333,7 +2333,9 @@
       "accountDefault": " · default broker",
       "accountDeactivated": " · dinonaktifkan",
       "accountSave": "Gunakan akun ini",
-      "accountSaved": "Akun tersimpan."
+      "accountSaved": "Akun tersimpan.",
+      "host": "Host",
+      "port": "Port"
     },
     "imports": {
       "title": "Impor extraETF Investments",
@@ -2358,7 +2360,8 @@
       "current": "Nilai saat ini",
       "targetValue": "Nilai target",
       "change": "Perubahan nilai"
-    }
+    },
+    "quoteAsOf": "Harga per {{time}}"
   },
   "analysis": {
     "updated": "Diperbarui",

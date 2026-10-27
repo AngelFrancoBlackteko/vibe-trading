@@ -1603,7 +1603,12 @@ def _call_remote(
     call_result = _complete_paginated_reply(
         profile.connector, operation, call_result, adapter, remote_name, arguments
     )
-    call_result = _normalize_remote_result(profile.connector, operation, call_result)
+    if profile.connector == "robinhood" and operation == "quote":
+        from src.trading.connectors.robinhood.mcp import normalize_result
+
+        call_result = normalize_result(operation, call_result, expected_symbol=arguments.get("symbol"))
+    else:
+        call_result = _normalize_remote_result(profile.connector, operation, call_result)
     account_number = arguments.get("account_number")
     if account_number:
         call_result = dict(call_result)

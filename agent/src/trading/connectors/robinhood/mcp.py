@@ -15,16 +15,10 @@ What the shapes are built from, and nothing else:
   #1428 (2026-09-16). ``data`` allows exactly ``positions`` and ``next``. An item
   carries ``symbol``, ``quantity`` and an optional ``average_buy_price``, and no
   price or currency.
-* ``get_equity_quotes``, the paginated tools' argument schemas and the ``type``
-  / ``next`` descriptions: the server's advertised ``tools/list`` metadata,
-  transcribed in the third-party ``kevin1chun/robinhood-for-agents`` repo
-  (``docs/official-mcp-tools.json``, live capture 2026-10-12, refreshed by an
-  authenticated login and checked verbatim by that repo's parity tests). Every
-  claim of that transcription that can be cross-checked against an independent
-  capture matches: its ``get_equity_positions`` ``outputSchema`` equals the
-  schema posted on #1428 field for field, and its quote fields match two other
-  third-party captures (``gordil/robin-python-SDK`` docs, real responses parsed
-  by ``Oft3r/agentic-trading-desk``).
+* ``get_equity_quotes`` and pagination schemas: the third-party transcription
+  at ``kevin1chun/robinhood-for-agents@16b3d800e7f29e9d450f45663d054a7b5adcd4b3``
+  in ``docs/official-mcp-tools.json``. This is captured schema evidence, not a
+  claim that this adapter has been verified against a live authenticated account.
 
 The descriptions this mapping relies on: a position item's ``type`` is the
 position direction — ``'long' (positive quantity), 'short' (negative),
@@ -40,6 +34,7 @@ official settled ``close``.
 
 from __future__ import annotations
 
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any, Callable
 
@@ -354,14 +349,13 @@ def portfolio_summary(envelope: Any) -> dict[str, Any]:
     }
 
 
-def quote_summary(envelope: Any) -> dict[str, Any] | None:
+def quote_summary(envelope: Any, *, expected_symbol: str | None = None) -> dict[str, Any] | None:
     """Map a ``get_equity_quotes`` reply to the quote view the portfolio prices with.
 
     The generic read asks for one symbol, so the reply must carry exactly one
     ``results`` entry. The mapping hands the reply's prices to the shared quote
-    reader under its own names: ``last_trade_price`` — the regular-hours print,
-    which the server describes as staying frozen at the closing price after the
-    close — becomes ``last``; the official settled ``close.price`` becomes
+    reader under its own names: the more recent timestamped regular/extended
+    hours trade becomes ``last``; the official settled ``close.price`` becomes
     ``close``; ``bid_price`` / ``ask_price`` become ``bid`` / ``ask``. A closed
     book reports those as ``"0"``, which the shared reader treats as no price.
     ``has_traded=False`` means the price fields are meaningless, so they are
@@ -371,6 +365,7 @@ def quote_summary(envelope: Any) -> dict[str, Any] | None:
     Args:
         envelope: ``MCPServerAdapter.call_tool`` result for
             ``get_equity_quotes``.
+        expected_symbol: Requested symbol, when called through the trading service.
 
     Returns:
         ``None`` when the reply advertises no result rows (the symbol resolved
@@ -422,10 +417,39 @@ def quote_summary(envelope: Any) -> dict[str, Any] | None:
     state = quote.get("state")
     if not isinstance(state, str) or not state.strip():
         raise RobinhoodShapeError(f"{tool} quote state is missing")
+    symbol = quote.get("symbol")
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise RobinhoodShapeError(f"{tool} quote symbol is missing")
+    symbol = symbol.strip().upper()
+    if expected_symbol and symbol != expected_symbol.strip().upper():
+        raise RobinhoodShapeError(f"{tool} quote symbol does not match the requested symbol")
+    usable = has_traded and state.strip() == "active"
     prices: dict[str, str | None] = {"last": None, "bid": None, "ask": None}
-    if has_traded:
+    price_as_of = None
+    if usable:
         for field, name in (("last_trade_price", "last"), ("bid_price", "bid"), ("ask_price", "ask")):
             prices[name] = _decimal_text(quote.get(field), f"quote.{field}", tool)
+        trades = []
+        for price_field, time_field in (
+            ("last_trade_price", "venue_last_trade_time"),
+            ("last_non_reg_trade_price", "venue_last_non_reg_trade_time"),
+        ):
+            raw_price = quote.get(price_field)
+            if raw_price is None:
+                continue
+            price = _decimal_text(raw_price, f"quote.{price_field}", tool)
+            if Decimal(price) <= 0:
+                continue
+            stamp = quote.get(time_field)
+            try:
+                parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                if parsed.utcoffset() is None:
+                    raise ValueError("missing timezone")
+            except (AttributeError, TypeError, ValueError):
+                raise RobinhoodShapeError(f"{tool} quote.{time_field} is not a timestamp with timezone") from None
+            trades.append((parsed, price, stamp))
+        if trades:
+            _, prices["last"], price_as_of = max(trades, key=lambda item: item[0])
     close_price = None
     close = entry.get("close")
     if close is not None:
@@ -437,16 +461,22 @@ def quote_summary(envelope: Any) -> dict[str, Any] | None:
         unexpected = sorted(set(close) - CLOSE_FIELDS)
         if unexpected:
             raise RobinhoodShapeError(f"{tool} close has unmapped fields: {', '.join(unexpected)}")
-        if close.get("price") is not None:
+        if not isinstance(close.get("symbol"), str) or close["symbol"].strip().upper() != symbol:
+            raise RobinhoodShapeError(f"{tool} close symbol does not match quote symbol")
+        if usable and close.get("price") is not None:
             close_price = _decimal_text(close.get("price"), "close.price", tool)
+            if not price_as_of and Decimal(close_price) > 0:
+                price_as_of = close.get("date")
     return {
-        "symbol": quote.get("symbol"),
+        "symbol": symbol,
         "last": prices["last"],
         "close": close_price,
         "bid": prices["bid"],
         "ask": prices["ask"],
         "has_traded": has_traded,
         "state": state.strip(),
+        "price_as_of": price_as_of,
+        "price_error": None if usable else f"Robinhood quote has_traded={has_traded}, state={state.strip()}",
     }
 
 
@@ -541,7 +571,7 @@ def account_choices(envelope: Any) -> list[dict[str, Any]]:
     return choices
 
 
-def normalize_result(operation: str, envelope: dict[str, Any]) -> dict[str, Any]:
+def normalize_result(operation: str, envelope: dict[str, Any], *, expected_symbol: str | None = None) -> dict[str, Any]:
     """Add the generic account / positions / accounts / quote view to a Robinhood reply.
 
     The broker reply is kept as it came. A reply that does not match the mapped
@@ -552,6 +582,7 @@ def normalize_result(operation: str, envelope: dict[str, Any]) -> dict[str, Any]
     Args:
         operation: Generic operation that produced the reply.
         envelope: ``MCPServerAdapter.call_tool`` result.
+        expected_symbol: Symbol that a single-symbol quote must match.
 
     Returns:
         A shallow copy with ``account``, ``positions`` or ``accounts`` added, or
@@ -561,7 +592,7 @@ def normalize_result(operation: str, envelope: dict[str, Any]) -> dict[str, Any]
         "account": ("account", portfolio_summary),
         "positions": ("positions", position_rows),
         "accounts": ("accounts", account_choices),
-        "quote": ("quote", quote_summary),
+        "quote": ("quote", lambda value: quote_summary(value, expected_symbol=expected_symbol)),
     }
     if operation not in mappers or str(envelope.get("status") or "").lower() != "ok":
         return envelope

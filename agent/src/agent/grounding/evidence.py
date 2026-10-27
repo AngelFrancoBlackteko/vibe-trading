@@ -1304,9 +1304,7 @@ class _EvidenceMixin:
                 sibling = value.get("currency")
                 sibling = sibling.strip().upper() if isinstance(sibling, str) else None
                 local_currency = (
-                    {"RMB": "CNY", "CNH": "CNY"}.get(sibling, sibling)
-                    if sibling in _CURRENCY_CODES
-                    else declared_currency
+                    {"RMB": "CNY", "CNH": "CNY"}.get(sibling, sibling) if sibling in _CURRENCY_CODES else None
                 )
                 local_timestamp = next(
                     (
@@ -1529,4 +1527,3 @@ class _EvidenceMixin:
                 )
             )
             room -= 1
-

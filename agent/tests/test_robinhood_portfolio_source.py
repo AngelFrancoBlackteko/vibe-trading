@@ -366,3 +366,29 @@ def test_accounts_route_reports_an_unavailable_broker_as_503(tmp_path, monkeypat
 
     assert response.status_code == 503
     assert "token expired" in response.json()["detail"]
+
+
+@pytest.mark.parametrize("case", ["wrong_symbol", "wrong_close_symbol", "never_traded", "inactive"])
+def test_quote_identity_and_listing_status_cannot_price_another_position(tmp_path, broker, case):
+    broker.replies["get_equity_positions"] = rh.positions([rh.position("AAPL", "4")])
+    quote = rh.quote("MSFT" if case == "wrong_symbol" else "AAPL", last_trade_price="0", bid_price="0", ask_price="0")
+    close = rh.settled_close("MSFT" if case == "wrong_close_symbol" else quote["symbol"], price="999")
+    if case == "never_traded":
+        quote["has_traded"] = False
+    if case == "inactive":
+        quote["state"] = "delisted"
+    broker.quotes_by_symbol["AAPL"] = rh.quotes([rh.quote_result(quote, close_row=close)])
+    row = _service(tmp_path).refresh()["positions"][0]
+    assert row["priced"] is False
+    assert row["market_price"] is None
+    assert row.get("price_error")
+
+
+def test_quote_uses_the_newer_extended_hours_trade_and_retains_its_time(tmp_path, broker):
+    broker.replies["get_equity_positions"] = rh.positions([rh.position("AAPL", "4")])
+    quote = rh.quote("AAPL", last_trade_price="100")
+    quote.update(last_non_reg_trade_price="120", venue_last_non_reg_trade_time="2026-10-12T21:00:00Z")
+    broker.quotes_by_symbol["AAPL"] = rh.quotes([rh.quote_result(quote)])
+    row = _service(tmp_path).refresh()["positions"][0]
+    assert row["market_price"] == 120
+    assert "2026-10-12T21:00:00Z" in row["pricing_basis"]
