@@ -81,8 +81,12 @@ def _is_forex(code: str) -> bool:
     upper = code.upper().removesuffix(".FX").replace("/", "")
     try:
         from akshare.forex.cons import symbol_market_map
-    except Exception:
-        return False
+    except ImportError:
+        try:
+            # Akshare 1.20 moved the map into the consolidated fx module.
+            from akshare.fx.cons_forex import symbol_market_map
+        except ImportError:
+            return False
     return upper in symbol_market_map
 
 

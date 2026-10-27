@@ -75,6 +75,18 @@ class TestIsForex:
         # "ZZZZZZ" isn't in akshare's symbol_market_map
         assert not _is_forex("ZZZZZZ")
 
+    def test_akshare_120_cons_namespace(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setitem(sys.modules, "akshare.forex.cons", None)
+        monkeypatch.setitem(
+            sys.modules,
+            "akshare.fx.cons_forex",
+            SimpleNamespace(symbol_market_map={"EURUSD": 119}),
+        )
+        assert _is_forex("EURUSD")
+        assert not _is_forex("ZZZZZZ")
+
 
 # ---------------------------------------------------------------------------
 # Routing tests — verify _fetch_one dispatches to the right endpoint without
