@@ -5,6 +5,19 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **`list_backtest_runs` finds the backtests earlier turns and sessions already
+  ran**, so a follow-up turn reads their artifacts with `read_run_artifact`
+  instead of re-running them. It lists runs from `req.json` and `run_card.json`
+  (paged, current session by default, also over MCP) with each backtest's
+  absolute `run_dir`. Assistant replies in the history now carry
+  `[prev_run: <id>]` from the message metadata, and the grounding ledger adopts
+  a prior run read through `read_run_artifact` (run card and `metrics.csv` must
+  agree, tables must match the run card manifest). The session filter is not an
+  access control: runs have no owner. A run forged by the model in an earlier
+  turn is not detected.
+
 ### Fixed
 
 - **Global futures routing and pricing**: digit-bearing contracts such as

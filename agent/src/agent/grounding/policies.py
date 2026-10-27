@@ -2579,10 +2579,14 @@ def _records_at(
     path = Path(token)
     if not path.is_absolute():
         path = root / path
+    normalized = Path(os.path.normpath(path))
     try:
-        relative = Path(os.path.normpath(path)).relative_to(root).as_posix()
+        relative = normalized.relative_to(root).as_posix()
     except ValueError:
-        return []
+        try:  # a backtest an earlier turn left sits beside the active run
+            relative = normalized.relative_to(root.parent).as_posix()
+        except ValueError:
+            return []
     if relative in ("", "."):
         return []
 
