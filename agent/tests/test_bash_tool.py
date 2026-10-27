@@ -131,7 +131,8 @@ def test_timeout_kills_process_tree(monkeypatch: pytest.MonkeyPatch) -> None:
     assert len(kills) == 1
 
 
-def test_heredoc_unsupported(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_heredoc_unsupported_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bash_tool.os, "name", "nt")
     popen = MagicMock(side_effect=AssertionError("heredoc reached subprocess"))
     monkeypatch.setattr(bash_tool.subprocess, "Popen", popen)
 
@@ -140,3 +141,16 @@ def test_heredoc_unsupported(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result["status"] == "error"
     assert result["error_code"] == "heredoc_unsupported"
     popen.assert_not_called()
+
+
+def test_heredoc_allowed_on_posix(monkeypatch: pytest.MonkeyPatch) -> None:
+    """POSIX shells support heredocs natively; the command must reach the
+    real shell instead of being rejected with a Windows-only error.
+    """
+    monkeypatch.setattr(bash_tool.os, "name", "posix")
+    fake = _FakePopen()
+    _install_fake_popen(monkeypatch, fake)
+
+    result = json.loads(BashTool().execute(command="cat <<EOF\nhello\nEOF"))
+
+    assert result["status"] == "ok"
