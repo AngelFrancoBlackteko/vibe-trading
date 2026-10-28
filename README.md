@@ -1124,12 +1124,14 @@ LANGCHAIN_PROVIDER=claude-cli
 LANGCHAIN_MODEL_NAME=claude-opus-5-5
 # LANGCHAIN_REASONING_EFFORT=high                   # low|medium|high|xhigh|max; passed as --effort
 # CLAUDE_CLI_PATH=/opt/homebrew/bin/claude          # when `claude` is not on PATH or in ~/.local/bin
-# CLAUDE_CLI_DENY_TOOL_PREFIXES=trading_,etoro_     # default; set empty to offer every tool
-# CLAUDE_CLI_BASH_POLICY=python-only                # or `off`
+# VIBE_TRADING_DENY_TOOL_PREFIXES=trading_,etoro_  # any provider; empty offers every tool
+# VIBE_TRADING_BASH_POLICY=python-only             # any provider, or `off`
+# CLAUDE_CLI_DENY_TOOL_PREFIXES=trading_,etoro_     # legacy alias when the generic name is unset
+# CLAUDE_CLI_BASH_POLICY=python-only                # legacy alias when the generic name is unset
 ```
 
-- `CLAUDE_CLI_DENY_TOOL_PREFIXES` hides tools whose names start with these prefixes from the model. The default hides every `trading_*` and `etoro_*` tool, read-only ones included, so the agent cannot quote or list positions through a broker connector under this provider until you change it.
-- `CLAUDE_CLI_BASH_POLICY=python-only` lets the `bash` tool run only `python <relative script>.py`, `python -c ...`, and read-only `ls`/`cat`/`head`/`tail`/`wc`/`pwd` on non-hidden relative paths (so not `.env`); refused calls are returned to the model so it can choose again. Any other value stops the provider from starting.
+- `VIBE_TRADING_DENY_TOOL_PREFIXES` hides tools whose names start with these prefixes from every provider. An explicitly configured `CLAUDE_CLI_DENY_TOOL_PREFIXES` remains the fallback alias across providers. With neither configured, other providers retain their existing tool surface; Claude CLI retains its previous `trading_,etoro_` default (including broker reads).
+- `VIBE_TRADING_BASH_POLICY=python-only` applies the same rule to every provider: `bash` may run only `python <relative script>.py`, `python -c ...`, and read-only `ls`/`cat`/`head`/`tail`/`wc`/`pwd` on non-hidden relative paths (so not `.env`); refused calls are returned to the model so it can choose again. `CLAUDE_CLI_BASH_POLICY` remains the fallback alias. `vibe-trading provider doctor` reports the active policy and which variable supplied it.
 
 > **Warning:** Both settings are convenience filters, not a security boundary. `python -c` can still run arbitrary code, and external MCP tools (`mcp_<server>_<tool>`) are not covered by the default prefixes. Live orders stay bound by the mandate gate and kill switch whatever these settings allow.
 
@@ -1239,8 +1241,10 @@ Copy `agent/.env.example` to `agent/.env` and uncomment the provider block you w
 | `TUSHARE_TOKEN` | No | Tushare Pro token for A-share data (falls back to AKShare) |
 | `TIMEOUT_SECONDS` | No | LLM call timeout, default 120s |
 | `CLAUDE_CLI_PATH` | No | `claude` executable for the `claude-cli` provider when it is not on PATH or in `~/.local/bin` |
-| `CLAUDE_CLI_DENY_TOOL_PREFIXES` | No | Tool-name prefixes hidden from the `claude-cli` model (default `trading_,etoro_`; empty offers every tool) |
-| `CLAUDE_CLI_BASH_POLICY` | No | `python-only` (default) or `off` for the `claude-cli` provider's `bash` tool |
+| `VIBE_TRADING_DENY_TOOL_PREFIXES` | No | Explicit tool-name filter across every provider; empty offers every tool; unconfigured retains prior provider defaults |
+| `VIBE_TRADING_BASH_POLICY` | No | Explicit `python-only` or `off` across providers; unconfigured retains prior defaults (`python-only` for Claude CLI, `off` otherwise) |
+| `CLAUDE_CLI_DENY_TOOL_PREFIXES` | No | Legacy alias for `VIBE_TRADING_DENY_TOOL_PREFIXES`, used when the generic name is unset |
+| `CLAUDE_CLI_BASH_POLICY` | No | Legacy alias for `VIBE_TRADING_BASH_POLICY`, used when the generic name is unset |
 | `API_AUTH_KEY` | Recommended for network deployments | Bearer token required when the API is reachable from non-local clients |
 | `VIBE_TRADING_ENABLE_SHELL_TOOLS` | No | Explicit opt-in for shell-capable tools in remote API/MCP-SSE style deployments |
 | `VIBE_TRADING_ALLOWED_FILE_ROOTS` | No | Extra comma-separated roots for document and broker-journal imports |
