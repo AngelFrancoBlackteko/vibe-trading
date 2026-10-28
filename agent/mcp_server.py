@@ -6,7 +6,7 @@ Zero API key required for HK/US/crypto research markets (yfinance, OKX,
 AKShare are free). Trading connector tools are profile-scoped and require the
 selected connector's own local app or OAuth setup.
 
-Surfaces 82 tools: skills, research goals, strategy discovery,
+Surfaces 83 tools: skills, research goals, strategy discovery,
 backtest/factor/options/pattern
 analysis, deterministic paper-trading matching (paper_trade_step), market data, fundamentals & capital-flow & news & discovery
 (get_fund_flow / get_dragon_tiger / get_northbound_flow / get_southbound_flow /
@@ -1354,6 +1354,25 @@ def read_run_artifact(
             "max_rows": max_rows,
             "columns": columns,
         },
+    )
+
+
+@mcp.tool
+def list_backtest_runs(scope: str = "all", run_id: str = "", limit: int = 5, offset: int = 0) -> str:
+    """List earlier backtest runs (newest first, paged) so their artifacts can be read, not re-run.
+
+    Each run carries the absolute ``run_dir`` of its backtests for ``read_run_artifact``.
+    Without an active session, ``scope="session"`` also lists every run.
+
+    Args:
+        scope: "all" (default) or "session".
+        run_id: Only this bare run directory name.
+        limit: Runs per page [1, 20] (default 5).
+        offset: Runs to skip; use ``next_offset`` from the previous page.
+    """
+    registry = _get_registry()
+    return registry.execute(
+        "list_backtest_runs", {"scope": scope, "run_id": run_id or None, "limit": limit, "offset": offset}
     )
 
 
