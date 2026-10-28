@@ -23,6 +23,7 @@ from src.agent.tool_results import (
     _archive_backtest_result, _failure_code, _is_tool_success, _normalize_tool_run_dir,
 )
 from src.agent.result_artifacts import deliver_tool_result
+from src.providers.tool_policy import _deny_prefixes, screen_calls
 from src.tools.redaction import redact_payload, redact_tool_result
 
 logger = logging.getLogger("src.agent.loop")
@@ -71,6 +72,7 @@ class ToolCallLifecycle:
         compact_requested = False
         focus_topic = ""
         execution_plan: list[tuple[Any, str | None]] = []
+        deny_prefixes = _deny_prefixes()
         batch_authorized_symbols = (
             set(self._grounding.authorized_symbols)
             if self._grounding is not None
@@ -87,6 +89,33 @@ class ToolCallLifecycle:
             return compact_requested, focus_topic
 
         for tc in tool_calls:
+            if tc.name.startswith(deny_prefixes):
+                execution_plan.append((
+                    tc,
+                    json.dumps({
+                        "status": "error",
+                        "skipped": True,
+                        "reason": f"{tc.name} is disabled by the active tool policy",
+                    }),
+                ))
+                continue
+            if tc.name in {"bash", "background_run", "cancel_background"}:
+                accepted, notes = screen_calls(
+                    [{"name": tc.name, "arguments": tc.arguments}],
+                    {tc.name},
+                )
+                if notes:
+                    execution_plan.append((
+                        tc,
+                        json.dumps({
+                            "status": "error",
+                            "skipped": True,
+                            "reason": notes[0].removeprefix("- "),
+                        }),
+                    ))
+                    continue
+                tc.arguments = accepted[0]["arguments"]
+
             # Layer 4: compact tool — mark then defer execution
             if tc.name == "compact":
                 self._tool_progress.note("compact", "compact")
