@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Bare US ETF and fund symbols** such as `QQQ` and `SPY` now resolve to
+  `QQQ.US` / market `us` instead of a suffix-less `global` candidate. The fetch
+  layer already routed bare US tickers as US equities, so the resolver was the
+  only place that disagreed: the identity lock then rejected the follow-up call
+  ("consumer symbol/venue differs from the locked resolver identity"). ETFs and
+  mutual funds on non-US venues keep their native form (#2084).
 - **Global futures routing and pricing**: digit-bearing contracts such as
   `M2K=F` and `6EZ2026.CME`, including `local:` inputs, reach the global
   futures engine with their full product code. OJ and ZR use quote-unit
