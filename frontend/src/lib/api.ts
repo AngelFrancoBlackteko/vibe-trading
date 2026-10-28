@@ -1062,6 +1062,8 @@ export interface LLMModelsResponse {
     | null;
   /** Model id -> reasoning effort levels it accepts; empty means none. */
   effort_levels?: Record<string, string[]> | null;
+  model_labels?: Record<string, string> | null;
+  default_effort_levels?: Record<string, string> | null;
 }
 
 export interface SourceOrderEntry {
