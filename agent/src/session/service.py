@@ -543,6 +543,7 @@ class SessionService:
             Result dictionary containing status, run_dir, run_id, metrics, and related fields.
         """
         from src.tools import build_registry
+        from src.tools.background_tools import BackgroundScope, get_background_manager
         from src.providers.chat import ChatLLM
         from src.agent.loop import AgentLoop
         from src.memory.persistent import PersistentMemory
@@ -586,6 +587,14 @@ class SessionService:
         # without a second cancellation channel that can drift out of sync.
         turn_cancel = threading.Event()
 
+        # Background tasks belong to the session, not to the attempt: a later
+        # attempt must still read what an earlier one started. The attempt id is
+        # kept on each task so cancellation can be attributed later.
+        background_scope = BackgroundScope(
+            owner_id=f"session:{session_id}", attempt_id=attempt_id
+        )
+        background = get_background_manager().for_scope(background_scope)
+
         registry = await loop.run_in_executor(
             _AGENT_EXECUTOR,
             lambda: build_registry(
@@ -596,6 +605,8 @@ class SessionService:
                 event_callback=event_callback,
                 warn_callback=_mcp_collision_warn,
                 cancel_event=turn_cancel,
+                background_manager=background,
+                background_scope=background_scope,
             ),
         )
 
@@ -608,6 +619,7 @@ class SessionService:
             max_iterations=get_env_config().agent_tuning.vibe_trading_agent_max_iterations,
             persistent_memory=pm,
             cancel_event=turn_cancel,
+            background_manager=background,
         )
         self._active_loops[session_id] = agent
 
