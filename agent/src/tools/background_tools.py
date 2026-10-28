@@ -375,8 +375,8 @@ class BackgroundManager:
         with self._lock:
             mine = [payload for owner, payload in self._notifications
                     if owner == self._scope.owner_id]
-            self._notifications = [(owner, payload) for owner, payload in self._notifications
-                                   if owner != self._scope.owner_id]
+            self._notifications[:] = [(owner, payload) for owner, payload in self._notifications
+                                      if owner != self._scope.owner_id]
         return mine
 
 

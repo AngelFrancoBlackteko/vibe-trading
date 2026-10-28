@@ -140,6 +140,20 @@ class TestOwnerIsolation:
         assert record["attempt_id"] == "attempt-1"
         assert len(later.drain_notifications()) == 1
 
+    def test_shared_handles_keep_one_notification_queue_after_a_drain(self) -> None:
+        from src.tools.background_tools import BackgroundScope
+
+        root = BackgroundManager(scope=BackgroundScope(owner_id="session-a"))
+        later = root.for_scope(BackgroundScope(owner_id="session-a", attempt_id="2"))
+        sibling = root.for_scope(BackgroundScope(owner_id="session-b"))
+        _run_to_completion(root, _echo_command("first"))
+        assert [n["result"] for n in later.drain_notifications()] == ["first"]
+        assert root.drain_notifications() == []
+        _run_to_completion(root, _echo_command("second"))
+        _run_to_completion(sibling, _echo_command("sibling"))
+        assert [n["result"] for n in later.drain_notifications()] == ["second"]
+        assert [n["result"] for n in sibling.drain_notifications()] == ["sibling"]
+
     def test_notification_is_delivered_once_across_repeated_drains(self) -> None:
         from src.tools.background_tools import BackgroundScope
 
