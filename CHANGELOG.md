@@ -13,6 +13,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   only place that disagreed: the identity lock then rejected the follow-up call
   ("consumer symbol/venue differs from the locked resolver identity"). ETFs and
   mutual funds on non-US venues keep their native form (#2084).
+- **`etf_holdings` accepts the `.US` market suffix** on US symbols, so the
+  identity locked as `QQQ.US` still reaches the SEC series/class ticker `QQQ`
+  instead of being reported as an unknown share class.
 - **Global futures routing and pricing**: digit-bearing contracts such as
   `M2K=F` and `6EZ2026.CME`, including `local:` inputs, reach the global
   futures engine with their full product code. OJ and ZR use quote-unit

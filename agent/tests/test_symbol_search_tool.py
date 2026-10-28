@@ -956,6 +956,8 @@ class TestBareUsEtfResolution:
             ("QQQ", {"quoteType": "ETF", "exchange": "NGM"}),
             ("SPY", {"quoteType": "ETF", "exchange": "PCX"}),
             ("VFIAX", {"quoteType": "MUTUALFUND", "exchange": "NAS"}),
+            # OTC Bulletin Board listings are US listings too.
+            ("ABCD", {"quoteType": "ETF", "exchange": "OBB"}),
             # Search payloads do not always carry an exchange row.
             ("QQQ", {"quoteType": "ETF"}),
         ],
@@ -971,6 +973,16 @@ class TestBareUsEtfResolution:
         assert ss._from_yahoo_symbol(
             "XIC", {"quoteType": "ETF", "exchange": "TOR"}
         ) == ("XIC", "global")
+
+    def test_bare_equity_on_foreign_venue_is_not_us(self) -> None:
+        """A bare non-US equity must not be relabelled as a US listing.
+
+        Before the exchange guard, every bare ``EQUITY`` became ``<SYM>.US``,
+        so ``RY`` (Toronto) was published as a US ticker.
+        """
+        assert ss._from_yahoo_symbol(
+            "RY", {"quoteType": "EQUITY", "exchange": "TOR"}
+        ) == ("RY", "global")
 
     def test_crypto_and_index_unchanged(self) -> None:
         assert ss._from_yahoo_symbol(
@@ -996,7 +1008,9 @@ class TestBareUsEtfResolution:
             ss.eastmoney_client,
             "get_json",
             return_value={"QuotationCodeTable": {"Data": []}},
-        ), patch.object(ss.yahoo_client, "search", return_value=quotes):
+        ), patch.object(ss.yahoo_client, "search", return_value=quotes), patch.object(
+            ss.sec_edgar_client, "cik_for", return_value=None
+        ):
             data = json.loads(ss.SymbolSearchTool().execute(query="QQQ"))["data"]
 
         row = next(c for c in data["candidates"] if c["symbol"] == "QQQ.US")

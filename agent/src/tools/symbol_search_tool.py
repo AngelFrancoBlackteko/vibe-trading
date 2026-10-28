@@ -165,10 +165,9 @@ _MARKET_BY_SUFFIX: Dict[str, str] = {
     "VN": "vn",
 }
 
-# Quote types Yahoo carries bare for US listings, in addition to equities.
-# ETFs and mutual funds are plain US tickers over there (``QQQ``, ``SPY``,
-# ``VFIAX``) and the data layer already treats a bare ticker as ``us_equity``;
-# only the resolver disagreed, which is what #2084 reported.
+# Quote types Yahoo lists under a plain US ticker (``QQQ``, ``SPY``, ``VFIAX``).
+# The data layer already treats a bare ticker as ``us_equity``; only the
+# resolver used to disagree, which is what #2084 reported.
 _US_LISTED_QUOTE_TYPES = frozenset({"EQUITY", "ETF", "MUTUALFUND"})
 
 # Yahoo exchange codes for US venues. Used only to keep a bare symbol that
@@ -179,15 +178,17 @@ _US_YAHOO_EXCHANGES = frozenset(
         "NMS",  # Nasdaq Global Select
         "NGM",  # Nasdaq Global Market
         "NCM",  # Nasdaq Capital Market
-        "NAS",
+        "NAS",  # Nasdaq (unspecified tier)
         "NYQ",  # NYSE
+        "NYE",  # NYSE (older payload spelling)
         "PCX",  # NYSE Arca (most ETFs)
         "ASE",  # NYSE American
         "BTS",  # Cboe BZX
         "OQX",  # OTCQX
         "OQB",  # OTCQB
+        "OBB",  # OTC Bulletin Board
         "PNK",  # Pink Sheets
-        "OTC",
+        "OTC",  # OTC (unspecified tier)
     }
 )
 
@@ -861,8 +862,10 @@ def _from_yahoo_symbol(raw_symbol: str, quote: Dict[str, Any]) -> tuple[str, str
     Args:
         raw_symbol: The Yahoo-side symbol (e.g. ``AAPL``, ``0700.HK``,
             ``TD.TO``, ``PNG.V``, or ``BTC-USD``).
-        quote: The full Yahoo quote, used to distinguish a bare US equity from a
-            crypto/index instrument via ``quoteType``.
+        quote: The full Yahoo quote, used to classify the instrument via
+            ``quoteType`` (bare US equity/ETF/fund vs crypto/index/FX) and to
+            keep a bare symbol filed under a non-US venue on its native form
+            via ``exchange``.
 
     Returns:
         ``(symbol, market)`` in the project convention.
