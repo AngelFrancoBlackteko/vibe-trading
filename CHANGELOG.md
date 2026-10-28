@@ -12,6 +12,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   `akshare.fx.cons_forex`, so the single hard-coded import turned every FX pair
   into an A-share lookup. Both layouts are now probed, and a wholly missing map
   degrades to "not a forex pair" instead of silently matching nothing.
+- **Bare US ETF and fund symbols** such as `QQQ` and `SPY` now resolve to
+  `QQQ.US` / market `us` instead of a suffix-less `global` candidate. The fetch
+  layer already routed bare US tickers as US equities, so the resolver was the
+  only place that disagreed: the identity lock then rejected the follow-up call
+  ("consumer symbol/venue differs from the locked resolver identity"). ETFs and
+  mutual funds on non-US venues keep their native form (#2084).
+- **`etf_holdings` accepts the `.US` market suffix** on US symbols, so the
+  identity locked as `QQQ.US` still reaches the SEC series/class ticker `QQQ`
+  instead of being reported as an unknown share class.
 - **Global futures routing and pricing**: digit-bearing contracts such as
   `M2K=F` and `6EZ2026.CME`, including `local:` inputs, reach the global
   futures engine with their full product code. OJ and ZR use quote-unit
