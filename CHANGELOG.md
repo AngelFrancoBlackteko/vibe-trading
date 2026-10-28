@@ -21,6 +21,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **`etf_holdings` accepts the `.US` market suffix** on US symbols, so the
   identity locked as `QQQ.US` still reaches the SEC series/class ticker `QQQ`
   instead of being reported as an unknown share class.
+- **JSONP-wrapped provider bodies** decode instead of raising: the throttled
+  JSON GET helper unwraps a `callback(...)` envelope when `response.json()`
+  cannot parse the body, so A-share news search keeps working when Eastmoney
+  switches to JSONP (#2081).
+- **Degraded Eastmoney news indexes** now raise an actionable error instead of
+  reading as an empty article list: the Guba user index (`passportWeb`) can no
+  longer masquerade as "this stock has no news" (#2081).
 - **Global futures routing and pricing**: digit-bearing contracts such as
   `M2K=F` and `6EZ2026.CME`, including `local:` inputs, reach the global
   futures engine with their full product code. OJ and ZR use quote-unit
