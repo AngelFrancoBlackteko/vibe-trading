@@ -161,7 +161,8 @@ def _fetch_eastmoney_news(query: str, limit: int) -> list[dict[str, Any]]:
     Raises:
         requests.RequestException: Network failure, propagated to the caller.
         requests.HTTPError: Non-2xx response status.
-        ValueError: Body is not valid JSON.
+        ValueError: Body is not valid JSON, or Eastmoney answered with its
+            degraded user index instead of the CMS article index.
     """
     param = json.dumps(
         {
@@ -193,6 +194,16 @@ def _fetch_eastmoney_news(query: str, limit: int) -> list[dict[str, Any]]:
         return []
     articles = result.get("cmsArticleWebOld")
     if not isinstance(articles, list):
+        # Eastmoney swaps the CMS article index for its Guba user index
+        # ("passportWeb") when it distrusts the caller, so a degraded answer is
+        # shaped like a valid but empty one. Reading it as ``[]`` would turn a
+        # blocked upstream into a silent "no news for this stock" (#2081).
+        if result:
+            raise ValueError(
+                "eastmoney returned no cmsArticleWebOld section "
+                f"(result keys: {sorted(result)}): the search index was degraded,"
+                " most likely anti-bot filtering of this network"
+            )
         return []
     return [_em_article(a) for a in articles if isinstance(a, dict)][:limit]
 

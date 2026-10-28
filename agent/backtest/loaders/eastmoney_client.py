@@ -20,12 +20,14 @@ Eastmoney addresses every instrument by a ``secid`` of the form ``<market>.<code
 
 from __future__ import annotations
 
-import json
 import logging
-import re
 from typing import Any
 
-from backtest.loaders._http import resolve_min_interval, throttled_get_json
+from backtest.loaders._http import (
+    decode_jsonp_body,
+    resolve_min_interval,
+    throttled_get_json,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,15 +64,6 @@ _FIELDS2 = "f51,f52,f53,f54,f55,f56,f57"
 # Process-level cache of resolved US secids so a repeated ticker never re-hits
 # the search endpoint. Keyed by the upper-cased bare ticker (e.g. "AAPL").
 _US_SECID_CACHE: dict[str, str | None] = {}
-
-# A JSONP envelope is a JS callback identifier followed by a parenthesized body,
-# optionally terminated by ';'. The identifier is restricted to legal JS names
-# (incl. dotted namespaces like "jQuery.cb") so a plain JSON array/object body —
-# which never starts this way — is left untouched.
-_JSONP_WRAPPER = re.compile(
-    r"^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*\((.*)\)\s*;?\s*$",
-    re.DOTALL,
-)
 
 
 def datacenter_rejection(payload: Any) -> str | None:
@@ -181,11 +174,8 @@ def _parse_us_secid(payload: Any) -> str | None:
 def _strip_jsonp(text: str) -> Any:
     """Decode a possibly JSONP-wrapped body to a Python object.
 
-    The suggest endpoint sometimes wraps its JSON in a ``callback(...)`` envelope.
-    A plain JSON body is parsed as-is first; only a body that actually matches a
-    leading callback identifier is unwrapped. This avoids corrupting plain JSON
-    whose string values contain parentheses (an earlier first-``(`` / last-``)``
-    slice mangled such bodies and returned ``None``).
+    Delegates to :func:`backtest.loaders._http.decode_jsonp_body`, the single
+    implementation shared with :func:`backtest.loaders._http.throttled_get_json`.
 
     Args:
         text: Raw response body.
@@ -193,18 +183,7 @@ def _strip_jsonp(text: str) -> Any:
     Returns:
         The decoded object, or ``None`` when nothing parseable is found.
     """
-    stripped = text.strip()
-    try:
-        return json.loads(stripped)
-    except (ValueError, TypeError):
-        pass
-    match = _JSONP_WRAPPER.match(stripped)
-    if match is None:
-        return None
-    try:
-        return json.loads(match.group(1).strip())
-    except (ValueError, TypeError):
-        return None
+    return decode_jsonp_body(text)
 
 
 def _resolve_us_secid(code: str) -> str | None:

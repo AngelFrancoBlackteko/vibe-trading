@@ -243,3 +243,36 @@ class TestExecuteError:
         assert out["ok"] is False
         assert "yahoo 429" in out["error"]
         assert "yahoo news fetch failed" in out["error"]
+
+
+class TestEastmoneyDegradedIndex:
+    """A degraded Eastmoney answer must not read as "this stock has no news".
+
+    Eastmoney serves its Guba user index (``passportWeb``) instead of the CMS
+    article index when it distrusts the caller, and that degraded answer is
+    shaped like a valid but empty one (see issue #2081).
+    """
+
+    def test_degraded_user_index_raises_instead_of_empty(self) -> None:
+        payload = {"code": 0, "result": {"passportWeb": [], "userWeb": []}}
+        with patch.object(eastmoney_client, "throttled_get_json", return_value=payload):
+            out = json.loads(StockNewsTool().execute(code="600519.SH"))
+
+        assert out["ok"] is False
+        assert "degraded" in out["error"]
+
+    def test_empty_cms_section_is_a_clean_empty_result(self) -> None:
+        payload = {"code": 0, "result": {"cmsArticleWebOld": []}}
+        with patch.object(eastmoney_client, "throttled_get_json", return_value=payload):
+            out = json.loads(StockNewsTool().execute(code="600519.SH"))
+
+        assert out["ok"] is True
+        assert out["data"]["articles"] == []
+
+    def test_jsonp_enveloped_body_is_parsed_into_articles(self) -> None:
+        body = "jQuery3700123_456(" + json.dumps(_em_news_payload(), ensure_ascii=False) + ")"
+        with patch.object(eastmoney_client, "throttled_get_json", return_value=body):
+            out = json.loads(StockNewsTool().execute(code="600519.SH"))
+
+        assert out["ok"] is True
+        assert len(out["data"]["articles"]) == 2
