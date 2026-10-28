@@ -7,6 +7,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Forex symbol detection** no longer depends on AKShare's module layout:
+  `akshare.forex` was deleted in 1.20.0 and the symbol map moved to
+  `akshare.fx.cons_forex`, so the single hard-coded import turned every FX pair
+  into an A-share lookup. Both layouts are now probed, and a wholly missing map
+  degrades to "not a forex pair" instead of silently matching nothing.
 - **Global futures routing and pricing**: digit-bearing contracts such as
   `M2K=F` and `6EZ2026.CME`, including `local:` inputs, reach the global
   futures engine with their full product code. OJ and ZR use quote-unit
