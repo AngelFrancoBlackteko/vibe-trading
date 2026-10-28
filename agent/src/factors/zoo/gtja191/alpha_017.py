@@ -37,7 +37,6 @@ __alpha_meta__ = {
 
 def compute(panel: dict) -> pd.DataFrame:
     c = panel["close"]
-    v = panel["volume"]
     vw = vwap(panel, "equity_cn")
     base = rank(vw - ts_max(vw, 15))
     expo = delta(c, 5)

@@ -899,7 +899,7 @@ Jalankan `vibe-trading alpha list` untuk menjelajah, `vibe-trading alpha show <i
 | **KoreaEquity** | Korea (KRX: KOSPI/KOSDAQ) | long-only, ±30% band judged at execution time on the unified tick grid, 2026 0.20% transaction tax |
 | **VietnamEquity** | Vietnam (HOSE) | long-only, T+2 settlement hold, ±7% band on the 10/50/100-VND tick grid, 100-share lots, 0.1% sell-side tax |
 | **BrazilEquity** | Brazil (B3) | BRL, B3 trading + settlement fees, configurable broker fee, 1- or 100-share lots, R$0.01 tick, shorting allowed |
-| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only, T+2 → T+1 (2024-05-27) counted on observed sessions, same-session sale netting, CEDEAR ratio changes reconciled from declared history, BYMA tick bands |
+| **ArgentinaEquity** | Argentina (BYMA) | ARS, hanya posisi beli; T+2 → T+1 (2024-05-27), penyelesaian diperkirakan dari sesi teramati; netting hasil penjualan hari yang sama; rasio CEDEAR dan tanggal kredit dinyatakan; tabel/panel tick eksplisit (`ar_tick_table`) atau tick per instrumen |
 | **Crypto** | crypto spot / USD-M perps | funding settlements, execution/mark split |
 | **ChinaFutures** · **GlobalFutures** | futures | margin, contract multipliers |
 | **Forex** | FX / metals | via the `mt5` loader (local terminal) or the hosted `tickerall` loader (no terminal, any OS) |
@@ -1068,6 +1068,7 @@ vibe-trading-mcp               # start MCP server (stdio)
 - **Python 3.11+** untuk Jalur B
 - **Docker** untuk Jalur A
 - OpenAI Codex juga dapat digunakan dengan ChatGPT OAuth: atur `LANGCHAIN_PROVIDER=openai-codex`, lalu jalankan `vibe-trading provider login openai-codex`. Ini tidak menggunakan `OPENAI_API_KEY`.
+  Di Pengaturan Web, pemilih model Codex menemukan model dan tingkat penalaran dari sesi ChatGPT yang terautentikasi. Jika gagal, model bawaan dan input manual tetap tersedia.
 - GitHub Copilot dapat digunakan dengan subscription Copilot aktif tanpa LLM API key yang ditagihkan terpisah. Lihat [provider GitHub Copilot SDK](#github-copilot-sdk-provider).
 
 > **Provider LLM yang didukung:** OpenRouter, OpenAI, Anthropic (native Messages API), DeepSeek, OpenCode (Go / Zen), Gemini, Groq, DashScope/Qwen, Zhipu, Moonshot/Kimi, MiniMax, SiliconFlow (CN + Global), Xiaomi MIMO, Novita AI, iFlytek Spark, Z.ai, NVIDIA NIM, ModelScope, GitHub Copilot, Ollama (lokal). Jika `*_BASE_URL` tidak diatur, setiap provider fallback ke endpoint canonical-nya, jadi cukup key saja. Lihat `.env.example` untuk config.

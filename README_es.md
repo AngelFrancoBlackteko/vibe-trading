@@ -738,7 +738,7 @@ Ejecuta `vibe-trading alpha list` para explorar, `vibe-trading alpha show <id>` 
 | **IndiaEquity** | India (NSE/BSE) | T+1, bandas de circuito, pila de costos STT / stamp / SEBI / GST basada en configuración |
 | **KoreaEquity** | Corea (KRX: KOSPI/KOSDAQ) | solo largo, banda de ±30% evaluada en el momento de ejecución sobre la malla de ticks unificada, impuesto de transacción del 0.20% en 2026 |
 | **BrazilEquity** | Brazil (B3) | BRL, B3 trading + settlement fees, configurable broker fee, 1- or 100-share lots, R$0.01 tick, shorting allowed |
-| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only, T+2 → T+1 (2024-05-27) counted on observed sessions, same-session sale netting, CEDEAR ratio changes reconciled from declared history, BYMA tick bands |
+| **ArgentinaEquity** | Argentina (BYMA) | ARS, solo posiciones largas; T+2 → T+1 (2024-05-27), liquidación aproximada por ruedas observadas; neteo de ventas del día; ratios CEDEAR y fechas de acreditación declarados; tabla/panel de ticks explícitos (`ar_tick_table`) o tick por instrumento |
 | **Crypto** | spot cripto / perps USD-M | liquidaciones de funding, división ejecución/mark |
 | **ChinaFutures** · **GlobalFutures** | futuros | margen, multiplicadores de contrato |
 | **Forex** | FX / metales | vía el loader `mt5` |
@@ -911,6 +911,7 @@ vibe-trading-mcp               # inicia el servidor MCP (stdio)
 - **Python 3.11+** para el Path B
 - **Docker** para el Path A
 - OpenAI Codex también se puede usar con ChatGPT OAuth: configura `LANGCHAIN_PROVIDER=openai-codex` y luego ejecuta `vibe-trading provider login openai-codex`. Esto no usa `OPENAI_API_KEY`.
+  En Ajustes web, el selector de Codex descubre los modelos y niveles de razonamiento disponibles en la sesión autenticada de ChatGPT. Si falla, siguen disponibles el modelo predeterminado y la entrada manual.
 
 > **Proveedores de LLM compatibles:** OpenRouter, OpenAI, Anthropic (API de Messages nativa), DeepSeek, Gemini, Groq, DashScope/Qwen, Zhipu, Moonshot/Kimi, MiniMax, SiliconFlow (CN + Global), Xiaomi MIMO, Novita AI, iFlytek Spark, Z.ai, NVIDIA NIM, ModelScope, GitHub Copilot, Ollama (local). Cuando no se configura ningún `*_BASE_URL`, cada proveedor recurre a su endpoint canónico, así que basta con una clave. Consulta `.env.example` para la configuración.
 

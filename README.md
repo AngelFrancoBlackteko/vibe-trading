@@ -883,7 +883,7 @@ Run `vibe-trading alpha list` to browse, `vibe-trading alpha show <id>` for form
 | **KoreaEquity** | Korea (KRX: KOSPI/KOSDAQ) | long-only, ±30% band judged at execution time on the unified tick grid, 2026 0.20% transaction tax |
 | **VietnamEquity** | Vietnam (HOSE) | long-only, T+2 settlement hold, ±7% band on the 10/50/100-VND tick grid, 100-share lots, 0.1% sell-side tax |
 | **BrazilEquity** | Brazil (B3) | BRL, B3 trading + settlement fees, configurable broker fee, 1- or 100-share lots, R$0.01 tick, shorting allowed |
-| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only, T+2 → T+1 (2024-05-27) counted on observed sessions, same-session sale netting, CEDEAR ratio changes reconciled from declared history, BYMA tick bands |
+| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only; T+2 → T+1 (2024-05-27), settlement approximated from observed sessions; same-session sale netting; declared CEDEAR ratios and credit dates; explicit tick table/panel (`ar_tick_table`) or per-instrument tick |
 | **Crypto** | crypto spot / USD-M perps | funding settlements, execution/mark split |
 | **ChinaFutures** · **GlobalFutures** | futures | margin, contract multipliers |
 | **Forex** | FX / metals | via the `mt5` loader (local terminal) or the hosted `tickerall` loader (no terminal, any OS) |

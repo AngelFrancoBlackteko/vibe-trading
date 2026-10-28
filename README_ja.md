@@ -733,7 +733,7 @@ Paper-vs-live is a **structural per-broker runtime guard** (account-id format, h
 | **KoreaEquity** | 韓国（KRX：KOSPI/KOSDAQ） | ロングオンリー、統一呼値グリッド上で ±30% 制限値幅を約定時点に判定、2026 年 0.20% の証券取引税 |
 | **VietnamEquity** | ベトナム（HOSE） | ロングオンリー、T+2 決済ホールド、10/50/100 ドンの呼値グリッド上で ±7% 制限値幅、100 株単元、売却側 0.1% 課税 |
 | **BrazilEquity** | Brazil (B3) | BRL, B3 trading + settlement fees, configurable broker fee, 1- or 100-share lots, R$0.01 tick, shorting allowed |
-| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only, T+2 → T+1 (2024-05-27) counted on observed sessions, same-session sale netting, CEDEAR ratio changes reconciled from declared history, BYMA tick bands |
+| **ArgentinaEquity** | Argentina (BYMA) | ARS、ロングのみ。T+2 → T+1（2024-05-27）、観測取引日による概算決済。同日売却代金の相殺、宣言した CEDEAR 比率と入庫日、明示した tick 表・市場区分（`ar_tick_table`）または銘柄別 tick |
 | **Crypto** | crypto spot / USD-M perps | funding settlements, execution/mark split |
 | **ChinaFutures** · **GlobalFutures** | futures | margin, contract multipliers |
 | **Forex** | FX / metals | via the `mt5` loader |
@@ -896,6 +896,7 @@ vibe-trading-mcp               # start MCP server (stdio)
 - Path B では **Python 3.11+**
 - Path A では **Docker**
 - OpenAI Codex は ChatGPT OAuth でも利用できます。`LANGCHAIN_PROVIDER=openai-codex` を設定し、`vibe-trading provider login openai-codex` を実行してください。`OPENAI_API_KEY` は使いません。
+  Web 設定の Codex モデル選択は、認証済み ChatGPT セッションから利用可能なモデルと推論レベルを取得します。取得できない場合も既定モデルと手入力を利用できます。
 
 > **Supported LLM providers:** OpenRouter、OpenAI、Anthropic（ネイティブ Messages API）、DeepSeek、Gemini、Groq、DashScope/Qwen、Zhipu、Moonshot/Kimi、MiniMax、SiliconFlow（CN + Global）、Xiaomi MIMO、Novita AI、iFlytek Spark、Z.ai、NVIDIA NIM、ModelScope、GitHub Copilot、Ollama（local）。`*_BASE_URL` が未設定の場合、各プロバイダーは canonical なエンドポイントにフォールバックするため、key だけで十分です。設定は `.env.example` を参照してください。
 

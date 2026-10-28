@@ -733,7 +733,7 @@ Paper-vs-live는 **구조적 브로커별 런타임 가드**(account-id 형식, 
 | **KoreaEquity** | 한국 (KRX: KOSPI/KOSDAQ) | 롱 온리, 통합 호가 단위에서 ±30% 가격제한폭을 체결 시점에 판정, 2026년 0.20% 증권거래세 |
 | **VietnamEquity** | 베트남 (HOSE) | 롱 온리, T+2 결제 보유, 10/50/100 VND 호가 단위에서 ±7% 가격제한폭, 100주 단위, 매도측 0.1% 세금 |
 | **BrazilEquity** | Brazil (B3) | BRL, B3 trading + settlement fees, configurable broker fee, 1- or 100-share lots, R$0.01 tick, shorting allowed |
-| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only, T+2 → T+1 (2024-05-27) counted on observed sessions, same-session sale netting, CEDEAR ratio changes reconciled from declared history, BYMA tick bands |
+| **ArgentinaEquity** | Argentina (BYMA) | ARS, 매수 전용. T+2 → T+1(2024-05-27), 관측 거래일로 결제를 근사. 당일 매도대금 상계, 명시한 CEDEAR 비율·입고일, tick 표·시장 구분(`ar_tick_table`) 또는 종목별 tick |
 | **Crypto** | crypto spot / USD-M perps | funding settlements, execution/mark split |
 | **ChinaFutures** · **GlobalFutures** | futures | margin, contract multipliers |
 | **Forex** | FX / metals | via the `mt5` loader |
@@ -894,6 +894,7 @@ vibe-trading-mcp               # start MCP server (stdio)
 - 경로 B용 **Python 3.11+**
 - 경로 A용 **Docker**
 - OpenAI Codex도 ChatGPT OAuth로 사용할 수 있습니다. `LANGCHAIN_PROVIDER=openai-codex`를 설정한 뒤 `vibe-trading provider login openai-codex`를 실행하세요. 이 방식은 `OPENAI_API_KEY`를 사용하지 않습니다.
+  Web 설정의 Codex 모델 선택기는 인증된 ChatGPT 세션에서 사용 가능한 모델과 추론 수준을 조회합니다. 조회에 실패해도 기본 모델과 직접 입력을 사용할 수 있습니다.
 
 > **지원 LLM provider:** OpenRouter, OpenAI, Anthropic (native Messages API), DeepSeek, Gemini, Groq, DashScope/Qwen, Zhipu, Moonshot/Kimi, MiniMax, SiliconFlow (CN + Global), Xiaomi MIMO, Novita AI, iFlytek Spark, Z.ai, NVIDIA NIM, ModelScope, GitHub Copilot, Ollama(local). `*_BASE_URL`이 설정되지 않으면 각 provider는 canonical endpoint로 폴백하므로 key만 있으면 충분합니다. 설정은 `.env.example`을 참고하세요.
 

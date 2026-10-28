@@ -755,7 +755,7 @@ LONGBRIDGE_ACCESS_TOKEN=...
 | **KoreaEquity** | 韩国（KRX：KOSPI/KOSDAQ） | 只做多，统一最小价位网格上于成交时刻判定 ±30% 涨跌停，2026 年 0.20% 证券交易税 |
 | **VietnamEquity** | 越南（HOSE） | 只做多，T+2 交收锁定，10/50/100 越南盾最小价位网格上 ±7% 涨跌停，100 股整手，0.1% 卖出方税 |
 | **BrazilEquity** | Brazil (B3) | BRL, B3 trading + settlement fees, configurable broker fee, 1- or 100-share lots, R$0.01 tick, shorting allowed |
-| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only, T+2 → T+1 (2024-05-27) counted on observed sessions, same-session sale netting, CEDEAR ratio changes reconciled from declared history, BYMA tick bands |
+| **ArgentinaEquity** | Argentina (BYMA) | ARS 现金、只做多；T+2 → T+1（2024-05-27），按观测交易日近似结算；同日卖出资金净额抵扣；声明 CEDEAR 比例与入账日；显式 tick 表/板块（`ar_tick_table`）或逐标的 tick |
 | **Crypto** | 加密现货 / USD-M 永续 | 资金费结算、成交价/标记价分离 |
 | **ChinaFutures** · **GlobalFutures** | 期货 | 保证金、合约乘数 |
 | **Forex** | 外汇 / 贵金属 | 经 `mt5` loader |
@@ -910,6 +910,7 @@ vibe-trading-mcp               # start MCP server (stdio)
 - 路径 B 需要 **Python 3.11+**
 - 路径 A 需要 **Docker**
 - OpenAI Codex 也可通过 ChatGPT OAuth 使用：设置 `LANGCHAIN_PROVIDER=openai-codex`，然后运行 `vibe-trading provider login openai-codex`。它不使用 `OPENAI_API_KEY`。
+  Web 设置中的 Codex 模型选择器会从已登录的 ChatGPT 会话发现可用模型与推理强度。发现失败时仍可使用默认模型或手动输入。
 
 > **支持的 LLM providers：** OpenRouter、OpenAI、Anthropic（原生 Messages API）、DeepSeek、Gemini、Groq、DashScope/Qwen、Zhipu、Moonshot/Kimi、MiniMax、SiliconFlow（CN + Global）、Xiaomi MIMO、Novita AI、iFlytek 星火、Z.ai、NVIDIA NIM、ModelScope、GitHub Copilot、Ollama（本地）。未设置 `*_BASE_URL` 时，每个 provider 会回退到其规范端点，因此只需一个 key 即可。配置见 `.env.example`。
 

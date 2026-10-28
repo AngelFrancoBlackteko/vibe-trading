@@ -733,7 +733,7 @@ LONGBRIDGE_ACCESS_TOKEN=...
 | **KoreaEquity** | كوريا (KRX: KOSPI/KOSDAQ) | شراء فقط، ونطاق ±30% يُحكم عليه لحظة التنفيذ على شبكة الخطوة السعرية الموحّدة، وضريبة تداول 0.20% لعام 2026 |
 | **VietnamEquity** | فيتنام (HOSE) | شراء فقط، واحتجاز تسوية T+2، ونطاق ±7% على شبكة الخطوة السعرية 10/50/100 دونغ، ولوت 100 سهم، وضريبة 0.1% على البيع |
 | **BrazilEquity** | Brazil (B3) | BRL, B3 trading + settlement fees, configurable broker fee, 1- or 100-share lots, R$0.01 tick, shorting allowed |
-| **ArgentinaEquity** | Argentina (BYMA) | ARS, long-only, T+2 → T+1 (2024-05-27) counted on observed sessions, same-session sale netting, CEDEAR ratio changes reconciled from declared history, BYMA tick bands |
+| **ArgentinaEquity** | Argentina (BYMA) | ARS، شراء فقط؛ T+2 → T+1 ‏(2024-05-27)، تسوية تقريبية بأيام التداول المرصودة؛ مقاصة حصيلة البيع في اليوم نفسه؛ نسب CEDEAR وتواريخ الإيداع المعلنة؛ جدول وخانة سعر معلنان (`ar_tick_table`) أو خطوة سعر لكل أداة |
 | **Crypto** | crypto فوري / عقود USD-M الدائمة | تسويات التمويل، وفصل سعر التنفيذ عن سعر العلامة |
 | **ChinaFutures** · **GlobalFutures** | العقود الآجلة | الهامش، ومضاعِفات العقد |
 | **Forex** | FX / المعادن | عبر مُحمّل `mt5` |
@@ -891,6 +891,7 @@ vibe-trading-mcp               # start MCP server (stdio)
 - **Python 3.11+** للمسار B
 - **Docker** للمسار A
 - يمكن استخدام OpenAI Codex أيضاً عبر ChatGPT OAuth: اضبط `LANGCHAIN_PROVIDER=openai-codex`، ثم شغل `vibe-trading provider login openai-codex`. هذا لا يستخدم `OPENAI_API_KEY`.
+  يكتشف محدد نماذج Codex في إعدادات الويب النماذج ومستويات الاستدلال المتاحة من جلسة ChatGPT المصادق عليها. عند تعذر الاكتشاف يبقى النموذج الافتراضي والإدخال اليدوي متاحين.
 
 > **مزودو LLM المدعومون:** OpenRouter, OpenAI, Anthropic (Messages API الأصلي), DeepSeek, Gemini, Groq, DashScope/Qwen, Zhipu, Moonshot/Kimi, MiniMax, SiliconFlow (CN + Global), Xiaomi MIMO, Novita AI, iFlytek Spark, Z.ai, NVIDIA NIM, ModelScope, GitHub Copilot, Ollama (local). عند عدم ضبط أي `*_BASE_URL`، يتراجع كل مزوّد إلى نقطة نهايته القانونية، فيكفي مفتاح واحد. راجع `.env.example` للإعداد.
 
