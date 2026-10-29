@@ -52,16 +52,20 @@
 
 > ⚠️ **安全警告：** X 账号 `VibeTrading_HKU`、Virtuals 项目 `101845` 及代币合约 `0x640BDBF77b6447E8b7DB7894cED84BD1c40571f4` 均非 Vibe-Trading 官方。我们从未发行或背书任何代币或 meme 币。请勿购买、连接钱包或签名。[详细说明](SECURITY.md#official-channels--impersonation)。
 
+- **2026-10-29** 🛠️ **研究复用与执行修复（尚未发版）**：保存带版本的研究资料，复用经 manifest 校验的历史回测产物（[#2079](https://github.com/HKUDS/Vibe-Trading/pull/2079)、[#2074](https://github.com/HKUDS/Vibe-Trading/pull/2074)）。
+  修复文档金额与单位、现货加密货币回测成本，恢复 Binance 挂单查询及 AKShare 兼容性（[#2050](https://github.com/HKUDS/Vibe-Trading/issues/2050)、[#2088](https://github.com/HKUDS/Vibe-Trading/issues/2088)、[#2090](https://github.com/HKUDS/Vibe-Trading/issues/2090)、[#2083](https://github.com/HKUDS/Vibe-Trading/pull/2083)）。
+  新增 Codex 模型发现、BYMA 规则、后台任务归属隔离及共享工具策略。模拟策略改用独立工作进程管道；Windows 原生复测仍待完成（[#2089](https://github.com/HKUDS/Vibe-Trading/issues/2089)、[CHANGELOG](CHANGELOG.md)）。
+
 - **2026-10-28** 🛠️ **模拟交易、组合与市场路由修复（尚未发版）**：新增 Phase 1 的与 K 线无关的模拟订单生命周期状态机，包含稳定 replay ID、终态撤单 fail-closed、日终结算、可选 partial fill 与确定性 snapshot（[#2066](https://github.com/HKUDS/Vibe-Trading/pull/2066)）。Robinhood 只读组合支持显式账户选择、报价映射和游标分页（[#2054](https://github.com/HKUDS/Vibe-Trading/pull/2054)，关闭 [#1428](https://github.com/HKUDS/Vibe-Trading/issues/1428)）。修复 Shadow Account 缓存失效与已声明的入场条件（[#2075](https://github.com/HKUDS/Vibe-Trading/pull/2075)、[#2073](https://github.com/HKUDS/Vibe-Trading/pull/2073)），将美股代码映射为富途格式并支持配置 IBKR/Futu gateway 地址（[#2076](https://github.com/HKUDS/Vibe-Trading/pull/2076)、[#1983](https://github.com/HKUDS/Vibe-Trading/pull/1983)）。同时修复结构化两轮最终答复、Qlib 因子语义以及数值与数字证据输入边界（[#2064](https://github.com/HKUDS/Vibe-Trading/pull/2064)、[#2069](https://github.com/HKUDS/Vibe-Trading/pull/2069)、[#2072](https://github.com/HKUDS/Vibe-Trading/pull/2072)、[#2053](https://github.com/HKUDS/Vibe-Trading/pull/2053)）。以上已进入 `main`，随下一版本发布。
 
 - **2026-10-27** 🛠️ **组合连接与研究正确性修复（尚未发版）**：通过网页或 CLI 保存各连接独立的 IBKR／富途网关地址，Agent 读取也使用该地址（[#1983](https://github.com/HKUDS/Vibe-Trading/pull/1983)）。Robinhood 组合读取支持账户选择、分页及股票报价；后续补修校验报价与请求代码一致，选择较新的常规／盘后成交并显示报价时间（[#2054](https://github.com/HKUDS/Vibe-Trading/pull/2054)，[011a555ed](https://github.com/HKUDS/Vibe-Trading/commit/011a555ed)）。恢复 Qlib ROC／CORD 公式，严格执行影子策略声明的入场边界（[#2069](https://github.com/HKUDS/Vibe-Trading/pull/2069), [#2073](https://github.com/HKUDS/Vibe-Trading/pull/2073)）。保留金融单位与数字证据，将币种声明限制在所属对象内，拒绝非有限数和布尔型金融输入，并接受普通两轮 `claude-cli` 结构化最终回答（[#2072](https://github.com/HKUDS/Vibe-Trading/pull/2072), [#2053](https://github.com/HKUDS/Vibe-Trading/pull/2053), [#2064](https://github.com/HKUDS/Vibe-Trading/pull/2064)）。以上已进入 `main`，随下一版本发布。
 
+<details>
+<summary>更早的新闻</summary>
+
 - **2026-10-26** 🛠️ **Agent 取消、数字核验与行情正确性修复（尚未发版）**：停止聊天时取消执行中的 Swarm，并忽略迟到的状态事件（[#2059](https://github.com/HKUDS/Vibe-Trading/pull/2059), [#2060](https://github.com/HKUDS/Vibe-Trading/pull/2060)）。恢复 Qlib BETA／RESI 的滚动 OLS 定义，允许符合条件的文档数字进入证据账本，并让 `claude-cli` 从原生工具调用被拒绝的情况中恢复（[#2062](https://github.com/HKUDS/Vibe-Trading/pull/2062), [#2058](https://github.com/HKUDS/Vibe-Trading/pull/2058), [#2048](https://github.com/HKUDS/Vibe-Trading/pull/2048)）。新增 alpha-bench 字段级数据可用性元信息，修复权重溢出、事件研究秩缩放和归因区间对齐（[#2057](https://github.com/HKUDS/Vibe-Trading/pull/2057), [#2046](https://github.com/HKUDS/Vibe-Trading/pull/2046), [#2000](https://github.com/HKUDS/Vibe-Trading/pull/2000), [#2044](https://github.com/HKUDS/Vibe-Trading/pull/2044)）。同时修复 Moonshot 推理强度路由、交易日志／期权输入校验、Stooq 分类股代码、筛选器小数字段及 ST 股票板块涨跌幅限制（[#2043](https://github.com/HKUDS/Vibe-Trading/pull/2043), [#2052](https://github.com/HKUDS/Vibe-Trading/pull/2052), [#2049](https://github.com/HKUDS/Vibe-Trading/pull/2049), [#2012](https://github.com/HKUDS/Vibe-Trading/pull/2012), [#1988](https://github.com/HKUDS/Vibe-Trading/pull/1988), [#1984](https://github.com/HKUDS/Vibe-Trading/pull/1984)）。以上已进入 `main`，随下一版本发布。
 
 - **2026-10-25** 🛠️ **会话、行情与计算修复（尚未发版）**：删除会话时同步清除搜索记录，首条消息带附件或 Swarm 指令时也能正确更新聊天标题（[#1970](https://github.com/HKUDS/Vibe-Trading/pull/1970)、[#1969](https://github.com/HKUDS/Vibe-Trading/pull/1969)）。修复 CCXT 历史行情提前截断、Nobitex 日线日期及 Tiingo 分类股代码映射（[#1999](https://github.com/HKUDS/Vibe-Trading/pull/1999)、[#1989](https://github.com/HKUDS/Vibe-Trading/pull/1989)、[#2010](https://github.com/HKUDS/Vibe-Trading/pull/2010)）。保留小额成交和图表价格精度，修正 GTJA 因子公式与 VWAP 单位，并在改变状态前拒绝含义不明的布尔参数（[修复](https://github.com/HKUDS/Vibe-Trading/commit/6dafa4cde)）。以上已进入 `main`，随下一版本发布。
-
-<details>
-<summary>更早的新闻</summary>
 
 - **2026-10-24** 🛠️ **MCP、回测与搜索修复（尚未发版）**：MCP 加载运行时 `.env`，Shell 工具仍需在启动时显式启用（[#1974](https://github.com/HKUDS/Vibe-Trading/pull/1974)）。报告期货默认杠杆假设（[#1972](https://github.com/HKUDS/Vibe-Trading/pull/1972)），年化计算保留时间跨度中的小数天数（[#1971](https://github.com/HKUDS/Vibe-Trading/pull/1971)），ddgs 返回空结果时继续尝试已启用的搜狗／Bing 备用源（[修复](https://github.com/HKUDS/Vibe-Trading/commit/0d946491c)）。
 
