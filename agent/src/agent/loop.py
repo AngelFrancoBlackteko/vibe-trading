@@ -185,6 +185,8 @@ class AgentLoop(ToolCallLifecycle):
         event_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None,
         max_iterations: int = 50,
         persistent_memory: Optional[Any] = None,
+        cancel_event: Optional[threading.Event] = None,
+        background_manager: Optional[Any] = None,
     ) -> None:
         """Initialize AgentLoop.
 
@@ -195,6 +197,15 @@ class AgentLoop(ToolCallLifecycle):
             event_callback: Event callback (event_type, data).
             max_iterations: Maximum number of loop iterations.
             persistent_memory: PersistentMemory for cross-session recall.
+            cancel_event: Optional cancellation flag to share with long-running
+                tools (e.g. ``run_swarm``). The host session owns the event so a
+                user stop reaches both the loop and the tools it is blocked in;
+                ``None`` keeps the loop self-contained (CLI and tests).
+            background_manager: Scoped handle over the background task table.
+                Must be the same handle the registry bound to its background
+                tools, so this loop drains the completions of its own tasks and
+                never another conversation's. Falls back to the handle the
+                registry recorded, and only then to an unowned one.
         """
         self.registry = prepare_registry(registry)
         self.llm = llm
@@ -232,7 +243,14 @@ class AgentLoop(ToolCallLifecycle):
         # Capture successful identities before context collapse can stub args.
         # Skipped/error call IDs never enter this ledger.
         self._successful_call_keys: dict[str, tuple[str, str]] = {}
-        self._cancel_event = threading.Event()
+        self._cancel_event = cancel_event if cancel_event is not None else threading.Event()
+        # Resolved once, not per iteration: an unowned handle is private to
+        # itself, so re-deriving it would silently discard this loop's results.
+        self._background_manager = (
+            background_manager
+            or getattr(registry, "background", None)
+            or get_background_manager()
+        )
         self._previous_summary: str = ""
         self._persistent_memory = persistent_memory
         self._run_iteration: int = 0
@@ -552,9 +570,8 @@ class AgentLoop(ToolCallLifecycle):
                 self._run_iteration += 1
                 current_iter = self._run_iteration
 
-                # Inject background task notifications
-                bg = get_background_manager()
-                notifs = bg.drain_notifications()
+                # Inject background task notifications for this conversation.
+                notifs = self._background_manager.drain_notifications()
                 if notifs:
                     notif_text = "\n".join(f"[bg:{n['task_id']}] {n['status']}: {n['result']}" for n in notifs)
                     messages.append({"role": "user", "content": f"<background-results>\n{notif_text}\n</background-results>\n\n<system>Continue processing with the background results above.</system>"})

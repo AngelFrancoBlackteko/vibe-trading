@@ -800,6 +800,7 @@ def test_binance_exchange_adjusts_for_server_time(monkeypatch) -> None:
     assert captured["options"] == {
         "adjustForTimeDifference": True,
         "recvWindow": 10_000,
+        "fetchOpenOrders": {"warnWithoutSymbol": False},
     }
     assert captured["sandbox"] is False
 
@@ -1201,6 +1202,15 @@ def test_dhan_whole_quantity_is_preserved_in_the_paper_fill(quantity, expected) 
     assert result["status"] == "ok"
     assert result["quantity"] == expected
     assert result["paper_guard"] == "simulated_locally"
+
+
+@pytest.mark.parametrize("quantity", [0.5, 1.5, "1.5", float("nan"), "invalid"])
+def test_shoonya_place_order_rejects_non_whole_quantity(quantity) -> None:
+    result = sh.place_order(
+        sh.ShoonyaConfig(profile="paper"), symbol="RELIANCE", side="buy", quantity=quantity
+    )
+    assert result["status"] == "error"
+    assert "whole number" in result["error"]
 
 
 @pytest.mark.parametrize("mod, Config", [(dh, dh.DhanConfig), (sh, sh.ShoonyaConfig)])
