@@ -40,8 +40,9 @@ assert not blocked.is_alive()
     reader = threading.Thread(target=lambda: received.put(host.stdout.readline()), daemon=True)
     reader.start()
     try:
-        assert received.get(timeout=30) == b"private-ipc-ok\n"
+        line = received.get(timeout=30)
         _, stderr = host.communicate(input=b"x", timeout=10)
+        assert line in {b"private-ipc-ok\n", b"private-ipc-ok\r\n"}, stderr.decode(errors="replace")
         assert host.returncode == 0, stderr.decode(errors="replace")
     finally:
         if host.poll() is None:
